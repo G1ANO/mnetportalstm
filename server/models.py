@@ -38,12 +38,8 @@ class User(db.Model):
         """Verifies if a given password matches the stored hash."""
         return bcrypt.check_password_hash(self.password_hash, password)
 
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
-
-
+#admin action log model to keep track of admin activities
 class AdminActionLog(db.Model):
     __tablename__ = 'admin_action_logs'  
 
