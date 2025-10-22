@@ -7,21 +7,32 @@ bcrypt=Bcrypt()
 
 class User(db.Model):
     __tablename__ = 'users'
-    
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    phone_number = db.Column(db.String(30))
+    password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(20), default='user')
+    status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     subscriptions = db.relationship('Subscription', backref='user', lazy=True)
+    payments = db.relationship('Payment', backref='user', lazy=True)
     feedbacks = db.relationship('Feedback', backref='user', lazy=True)
-    
+    complaints = db.relationship('Complaint', backref='user', lazy=True)
+    loyalty_points = db.relationship('LoyaltyPoint', backref='user', lazy=True)
+    redemptions = db.relationship('Redemption', backref='user', lazy=True)
+    notifications = db.relationship('Notification', backref='user', lazy=True)
+    usage_patterns = db.relationship('UsagePattern', backref='user', lazy=True)
+
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-    
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+    
 
 class SubscriptionTier(db.Model):
     __tablename__ = 'subscription_tiers'
