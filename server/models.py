@@ -61,6 +61,18 @@ class Subscription(db.Model):
     status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Payment(db.Model):
+    __tablename__ = 'payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Numeric(10, 2))
+    payment_method = db.Column(db.String(50)) #eg mpesa
+    transaction_reference = db.Column(db.String(100))
+    status = db.Column(db.String(20), default='success') #eg success or failed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Feedback(db.Model):
     __tablename__ = 'feedbacks'
     
@@ -117,7 +129,7 @@ class Notification(db.Model):
     status = db.Column(db.String(20), default='unread')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-class UsagePatterns(db.Model):
+class UsagePattern(db.Model):
     __tablename__ = 'usage_patterns'
 
     id = db.Column(db.Integer, primary_key=True)
