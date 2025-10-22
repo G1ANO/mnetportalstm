@@ -93,5 +93,27 @@ class Redemption(db.Model):
     reward_type = db.Column(db.String(100))
     metadata = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    message = db.Column(db.Text)
+    channel = db.Column(db.String(50))
+    type = db.Column(db.String(50))
+    status = db.Column(db.String(20), default='unread')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class UsagePatterns(db.Model):
+    __tablename__ = 'usage_patterns'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    data_used_mb = db.Column(db.Numeric(10, 2))
+    session_duration = db.Column(db.Integer)
+    most_used_hours = db.Column(db.String(50))
+    location = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     
