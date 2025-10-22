@@ -38,3 +38,25 @@ class User(db.Model):
         """Verifies if a given password matches the stored hash."""
         return bcrypt.check_password_hash(self.password_hash, password)
 
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+class AdminActionLog(db.Model):
+    __tablename__ = 'admin_action_logs'  
+
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    target_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    details = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    
+    admin = db.relationship('User', foreign_keys=[admin_id], backref='admin_actions')
+    target_user = db.relationship('User', foreign_keys=[target_user_id], backref='targeted_actions')
+
+    def __repr__(self):
+        return f"<AdminActionLog {self.action} by Admin {self.admin_id} on User {self.target_user_id}>"
