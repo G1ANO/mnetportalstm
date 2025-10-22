@@ -1,40 +1,60 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+
 db = SQLAlchemy()
-bcrypt = Bcrypt()
 
 class User(db.Model):
-
     __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)  # Unique user ID
-    name = db.Column(db.String(100))
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(30))
-    password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(20), default='user')  # 'user' or 'admin'
-    status = db.Column(db.String(20), default='active')
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    subscriptions = db.relationship('Subscription', backref='user', lazy=True)
+    feedbacks = db.relationship('Feedback', backref='user', lazy=True)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class SubscriptionTier(db.Model):
+    __tablename__ = 'subscription_tiers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Numeric(10, 2))
+    duration_days = db.Column(db.Integer)
+    speed_limit = db.Column(db.Integer)
+    data_limit = db.Column(db.Integer)
+    description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-#first i create a user model that represents a user in the WiFi system it can be either a normal user or an admin.
+
+    feedbacks = db.relationship('Feedback', backref='tier', lazy=True)
+    subscriptions = db.relationship('Subscription', backref='tier', lazy=True)
+
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
     
-    #  Relationships 
-    subscriptions = db.relationship('Subscription', backref='user', lazy=True)
-    payments = db.relationship('Payment', backref='user', lazy=True)
-    feedbacks = db.relationship('Feedback', backref='user', lazy=True)
-    complaints = db.relationship('Complaint', backref='user', lazy=True)
-    loyalty_points = db.relationship('LoyaltyPoint', backref='user', lazy=True)
-    redemptions = db.relationship('Redemption', backref='user', lazy=True)
-    notifications = db.relationship('Notification', backref='user', lazy=True)
-    usage_patterns = db.relationship('UsagePattern', backref='user', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False)
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime)
+    status = db.Column(db.String(20), default='active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    #this are password helper methods
-    def set_password(self, password):
-        """Hashes and stores the user's password securely."""
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def check_password(self, password):
-        """Verifies if a given password matches the stored hash."""
-        return bcrypt.check_password_hash(self.password_hash, password)
-
+class Feedback(db.Model):
+    __tablename__ = 'feedbacks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
