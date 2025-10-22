@@ -1,8 +1,9 @@
-from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
+bcrypt=Bcrypt()
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -114,6 +115,16 @@ class UsagePatterns(db.Model):
     session_duration = db.Column(db.Integer)
     most_used_hours = db.Column(db.String(50))
     location = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+class AdminActionLog(db.Model):
+    __tablename__ = 'admin_action_logs'  
+
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    target_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    details = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     
