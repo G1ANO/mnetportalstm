@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
-from models import db, bcrypt, User, SubscriptionTier, Feedback
+from models import db, bcrypt, User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
 
 app = Flask(__name__)
@@ -38,8 +38,6 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
-#this registers a new user and requires name,email,password and phonenumber 
-
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -52,7 +50,7 @@ def login():
         "message": "Login successful",
         "user": {"id": user.id, "email": user.email, "role": user.role}
     }), 200
-#here i log in a user by checking email and password and returns basic user info if successful
+
 @app.route('/tiers', methods=['GET'])
 def get_tiers():
     tiers = SubscriptionTier.query.all()
@@ -66,12 +64,11 @@ def get_tiers():
         "description": t.description
     } for t in tiers]
     return jsonify(result), 200
-#this returns all available subscription plans.
 
 @app.route('/tiers', methods=['POST'])
 def create_tier():
     data = request.get_json()
-    admin_id = data.get('admin_id')  #this manually checks admin user
+    admin_id = data.get('admin_id')  
     admin = User.query.get(admin_id)
 
     if not admin or admin.role != 'admin':
@@ -88,7 +85,6 @@ def create_tier():
     db.session.add(tier)
     db.session.commit()
     return jsonify({"message": "Tier created successfully"}), 201
-#here admin creates a new subscription tier and requies adminid in request body
 
 @app.route('/tiers/<int:id>', methods=['PATCH'])
 def update_tier(id):
@@ -104,7 +100,6 @@ def update_tier(id):
         setattr(tier, key, value)
     db.session.commit()
     return jsonify({"message": "Tier updated"}), 200
-#here an admin is able to update an existing subscription tier
 
 @app.route('/tiers/<int:id>', methods=['DELETE'])
 def delete_tier(id):
@@ -150,8 +145,96 @@ def add_feedback():
     return jsonify({"message": "Feedback submitted successfully"}), 201
 #this allows users to submit feedback about a subscription tier
 
+@app.route('/complaints', methods=['GET'])
+def get_complaints():
+    """Fetch complaints (admin sees all, user sees own)."""
+    user_id = request.args.get('user_id')
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if user.role == 'admin':
+        complaints = Complaint.query.all()
+    else:
+        complaints = Complaint.query.filter_by(user_id=user.id).all()
+
+    result = [{
+        "id": c.id,
+        "subject": c.subject,
+        "description": c.description,
+        "status": c.status,
+        "admin_response": c.admin_response
+    } for c in complaints]
+
+    return jsonify(result), 200
+
+
+@app.route('/complaints', methods=['POST'])
+def add_complaint():
+    """User submits a complaint."""
+    data = request.get_json()
+    c = Complaint(
+        user_id=data.get('user_id'),
+        subject=data.get('subject'),
+        description=data.get('description'),
+        status="pending"
+    )
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({"message": "Complaint submitted successfully"}), 201
+
+
+@app.route('/complaints/<int:id>/reply', methods=['PATCH'])
+def reply_complaint(id):
+    """Admin responds to a complaint."""
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != "admin":
+        return jsonify({"error": "Admins only"}), 403
+
+    complaint = Complaint.query.get_or_404(id)
+    complaint.admin_response = data.get('admin_response')
+    complaint.status = data.get('status', 'resolved')
+    db.session.commit()
+    return jsonify({"message": "Complaint updated successfully"}), 200
+
+
+
+@app.route('/loyalty', methods=['GET'])
+def get_loyalty_points():
+    """View loyalty points for a user."""
+    user_id = request.args.get('user_id')
+    points = LoyaltyPoint.query.filter_by(user_id=user_id).first()
+
+    if not points:
+        return jsonify({"points": 0, "balance": 0}), 200
+
+    return jsonify({
+        "points_earned": points.points_earned,
+        "points_redeemed": points.points_redeemed,
+        "balance": points.balance
+    }), 200
+
+
+@app.route('/notifications', methods=['GET'])
+def get_notifications():
+    """Fetch user notifications."""
+    user_id = request.args.get('user_id')
+    notes = Notification.query.filter_by(user_id=user_id).all()
+
+    result = [{
+        "message": n.message,
+        "channel": n.channel,
+        "type": n.type,
+        "status": n.status
+    } for n in notes]
+
+    return jsonify(result), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
