@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
-from models import db, bcrypt, User, SubscriptionTier, Feedback
+from models import db, bcrypt, User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
 
 app = Flask(__name__)
@@ -149,6 +149,113 @@ def add_feedback():
     db.session.commit()
     return jsonify({"message": "Feedback submitted successfully"}), 201
 #this allows users to submit feedback about a subscription tier
+
+@app.route('/complaints', methods=['GET'])
+def get_complaints():
+    """Fetch complaints (admin sees all, user sees own)."""
+    user_id = request.args.get('user_id')
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if user.role == 'admin':
+        complaints = Complaint.query.all()
+    else:
+        complaints = Complaint.query.filter_by(user_id=user.id).all()
+
+    result = [{
+        "id": c.id,
+        "subject": c.subject,
+        "description": c.description,
+        "status": c.status,
+        "admin_response": c.admin_response
+    } for c in complaints]
+
+    return jsonify(result), 200
+
+
+@app.route('/complaints', methods=['POST'])
+def add_complaint():
+    """User submits a complaint."""
+    data = request.get_json()
+    c = Complaint(
+        user_id=data.get('user_id'),
+        subject=data.get('subject'),
+        description=data.get('description'),
+        status="pending"
+    )
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({"message": "Complaint submitted successfully"}), 201
+
+
+@app.route('/complaints/<int:id>/reply', methods=['PATCH'])
+def reply_complaint(id):
+    """Admin responds to a complaint."""
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != "admin":
+        return jsonify({"error": "Admins only"}), 403
+
+    complaint = Complaint.query.get_or_404(id)
+    complaint.admin_response = data.get('admin_response')
+    complaint.status = data.get('status', 'resolved')
+    db.session.commit()
+    return jsonify({"message": "Complaint updated successfully"}), 200
+
+
+# =========================================================
+#  LOYALTY POINTS
+# =========================================================
+@app.route('/loyalty', methods=['GET'])
+def get_loyalty_points():
+    """View loyalty points for a user."""
+    user_id = request.args.get('user_id')
+    points = LoyaltyPoint.query.filter_by(user_id=user_id).first()
+
+    if not points:
+        return jsonify({"points": 0, "balance": 0}), 200
+
+    return jsonify({
+        "points_earned": points.points_earned,
+        "points_redeemed": points.points_redeemed,
+        "balance": points.balance
+    }), 200
+
+
+# =========================================================
+#  NOTIFICATIONS
+# =========================================================
+@app.route('/notifications', methods=['GET'])
+def get_notifications():
+    """Fetch user notifications."""
+    user_id = request.args.get('user_id')
+    notes = Notification.query.filter_by(user_id=user_id).all()
+
+    result = [{
+        "message": n.message,
+        "channel": n.channel,
+        "type": n.type,
+        "status": n.status
+    } for n in notes]
+
+    return jsonify(result), 200
+
+
+# =========================================================
+#  ERROR HANDLING
+# =========================================================
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify({"error": "Bad request"}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
