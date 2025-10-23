@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
-from models import db, bcrypt, User, SubscriptionTier 
+from models import db, bcrypt, User, SubscriptionTier, Feedback
 from config import Config
 
 app = Flask(__name__)
@@ -120,6 +120,35 @@ def delete_tier(id):
     db.session.commit()
     return jsonify({"message": "Tier deleted"}), 200
 #here an admin deletes a subscription tier
+
+@app.route('/feedbacks', methods=['GET'])
+def get_feedbacks():
+    feedbacks = Feedback.query.all()
+    result = [{
+        "id": f.id,
+        "user_id": f.user_id,
+        "tier_id": f.tier_id,
+        "rating": f.rating,
+        "comment": f.comment
+    } for f in feedbacks]
+    return jsonify(result), 200
+#this returns all feedback submitted by users
+
+@app.route('/feedbacks', methods=['POST'])
+def add_feedback():
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    feedback = Feedback(
+        user_id=user_id,
+        tier_id=data.get('tier_id'),
+        rating=data.get('rating'),
+        comment=data.get('comment')
+    )
+    db.session.add(feedback)
+    db.session.commit()
+    return jsonify({"message": "Feedback submitted successfully"}), 201
+#this allows users to submit feedback about a subscription tier
 
 if __name__ == '__main__':
     app.run(debug=True)
