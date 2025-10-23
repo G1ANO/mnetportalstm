@@ -38,8 +38,6 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
-#this registers a new user and requires name,email,password and phonenumber 
-
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -52,7 +50,7 @@ def login():
         "message": "Login successful",
         "user": {"id": user.id, "email": user.email, "role": user.role}
     }), 200
-#here i log in a user by checking email and password and returns basic user info if successful
+
 @app.route('/tiers', methods=['GET'])
 def get_tiers():
     tiers = SubscriptionTier.query.all()
@@ -66,12 +64,11 @@ def get_tiers():
         "description": t.description
     } for t in tiers]
     return jsonify(result), 200
-#this returns all available subscription plans.
 
 @app.route('/tiers', methods=['POST'])
 def create_tier():
     data = request.get_json()
-    admin_id = data.get('admin_id')  #this manually checks admin user
+    admin_id = data.get('admin_id')  
     admin = User.query.get(admin_id)
 
     if not admin or admin.role != 'admin':
@@ -88,7 +85,6 @@ def create_tier():
     db.session.add(tier)
     db.session.commit()
     return jsonify({"message": "Tier created successfully"}), 201
-#here admin creates a new subscription tier and requies adminid in request body
 
 @app.route('/tiers/<int:id>', methods=['PATCH'])
 def update_tier(id):
@@ -104,7 +100,6 @@ def update_tier(id):
         setattr(tier, key, value)
     db.session.commit()
     return jsonify({"message": "Tier updated"}), 200
-#here an admin is able to update an existing subscription tier
 
 @app.route('/tiers/<int:id>', methods=['DELETE'])
 def delete_tier(id):
