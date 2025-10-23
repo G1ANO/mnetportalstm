@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
-from models import db, bcrypt, User
+from models import db, bcrypt, User, SubscriptionTier 
 from config import Config
 
 app = Flask(__name__)
@@ -53,6 +53,20 @@ def login():
         "user": {"id": user.id, "email": user.email, "role": user.role}
     }), 200
 #here i log in a user by checking email and password and returns basic user info if successful
+@app.route('/tiers', methods=['GET'])
+def get_tiers():
+    tiers = SubscriptionTier.query.all()
+    result = [{
+        "id": t.id,
+        "name": t.name,
+        "price": float(t.price),
+        "duration_days": t.duration_days,
+        "speed_limit": t.speed_limit,
+        "data_limit": t.data_limit,
+        "description": t.description
+    } for t in tiers]
+    return jsonify(result), 200
+#this returns all available subscription plans.
 
 if __name__ == '__main__':
     app.run(debug=True)
