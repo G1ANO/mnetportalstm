@@ -40,6 +40,20 @@ def register():
     return jsonify({"message": "User registered successfully"}), 201
 #this registers a new user and requires name,email,password and phonenumber 
 
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    if not user or not user.check_password(data['password']):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "user": {"id": user.id, "email": user.email, "role": user.role}
+    }), 200
+#here i log in a user by checking email and password and returns basic user info if successful
+
 if __name__ == '__main__':
     app.run(debug=True)
 
