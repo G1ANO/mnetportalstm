@@ -207,9 +207,7 @@ def reply_complaint(id):
     return jsonify({"message": "Complaint updated successfully"}), 200
 
 
-# =========================================================
-#  LOYALTY POINTS
-# =========================================================
+
 @app.route('/loyalty', methods=['GET'])
 def get_loyalty_points():
     """View loyalty points for a user."""
@@ -226,9 +224,6 @@ def get_loyalty_points():
     }), 200
 
 
-# =========================================================
-#  NOTIFICATIONS
-# =========================================================
 @app.route('/notifications', methods=['GET'])
 def get_notifications():
     """Fetch user notifications."""
@@ -244,21 +239,7 @@ def get_notifications():
 
     return jsonify(result), 200
 
-
-# =========================================================
-#  ERROR HANDLING
-# =========================================================
-@app.errorhandler(404)
-def not_found(e):
-    return jsonify({"error": "Not found"}), 404
-
-
-@app.errorhandler(400)
-def bad_request(e):
-    return jsonify({"error": "Bad request"}), 400
-
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
