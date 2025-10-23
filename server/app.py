@@ -68,6 +68,59 @@ def get_tiers():
     return jsonify(result), 200
 #this returns all available subscription plans.
 
+@app.route('/tiers', methods=['POST'])
+def create_tier():
+    data = request.get_json()
+    admin_id = data.get('admin_id')  #this manually checks admin user
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    tier = SubscriptionTier(
+        name=data.get('name'),
+        price=data.get('price'),
+        duration_days=data.get('duration_days'),
+        speed_limit=data.get('speed_limit'),
+        data_limit=data.get('data_limit'),
+        description=data.get('description')
+    )
+    db.session.add(tier)
+    db.session.commit()
+    return jsonify({"message": "Tier created successfully"}), 201
+#here admin creates a new subscription tier and requies adminid in request body
+
+@app.route('/tiers/<int:id>', methods=['PATCH'])
+def update_tier(id):
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    tier = SubscriptionTier.query.get_or_404(id)
+    for key, value in data.items():
+        setattr(tier, key, value)
+    db.session.commit()
+    return jsonify({"message": "Tier updated"}), 200
+#here an admin is able to update an existing subscription tier
+
+@app.route('/tiers/<int:id>', methods=['DELETE'])
+def delete_tier(id):
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    tier = SubscriptionTier.query.get_or_404(id)
+    db.session.delete(tier)
+    db.session.commit()
+    return jsonify({"message": "Tier deleted"}), 200
+#here an admin deletes a subscription tier
+
 if __name__ == '__main__':
     app.run(debug=True)
 
