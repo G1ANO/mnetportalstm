@@ -182,4 +182,58 @@ with app.app_context():
     db.session.commit()
 
     
+from app import app, db
+from models import User, Notification, UsagePattern, AdminActionLog
+
+with app.app_context():
+    user1 = User.query.filter_by(email="jane@example.com").first()
+    user2 = User.query.filter_by(email="john@example.com").first()
+    admin = User.query.filter_by(email="admin@example.com").first()
+
+    
+    notif1 = Notification(
+        user=user1,
+        message="Your Weekly Plan will expire in 2 days.",
+        channel="email",
+        type="reminder",
+        status="unread"
+    )
+
+    notif2 = Notification(
+        user=user2,
+        message="Get 10% off on next month’s plan!",
+        channel="sms",
+        type="promotion",
+        status="sent"
+    )
+
+    
+    usage1 = UsagePattern(
+        user=user1,
+        data_used_mb=350.5,
+        session_duration=240,
+        most_used_hours="6PM - 10PM",
+        location="Nairobi"
+    )
+
+    usage2 = UsagePattern(
+        user=user2,
+        data_used_mb=800.0,
+        session_duration=360,
+        most_used_hours="8AM - 12PM",
+        location="Mombasa"
+    )
+
+    
+    log1 = AdminActionLog(
+        admin_id=admin.id,
+        action="Suspended user",
+        target_user_id=user2.id,
+        details="User violated fair usage policy."
+    )
+
+    db.session.add_all([notif1, notif2, usage1, usage2, log1])
+    db.session.commit()
+
+    
 
