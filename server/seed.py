@@ -1,4 +1,4 @@
-# seed_step1_core.py
+
 from app import app, db
 from models import User, SubscriptionTier
 from datetime import datetime
@@ -7,7 +7,7 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    # ---------- USERS ----------
+    
     admin = User(
         name="Admin User",
         email="admin@example.com",
@@ -33,9 +33,8 @@ with app.app_context():
         role="user",
         status="active"
     )
-    user2.set_password("password123")
+     user2.set_password("password123")
 
-    # ---------- SUBSCRIPTION TIERS ----------
     weekly = SubscriptionTier(
         name="Weekly Plan",
         price=3.00,
@@ -64,6 +63,61 @@ with app.app_context():
     )
 
     db.session.add_all([admin, user1, user2, weekly, monthly, premium])
+    db.session.commit()
+
+    
+from app import app, db
+from models import User, SubscriptionTier, Payment, Subscription
+from datetime import datetime, timedelta
+
+with app.app_context():
+    user1 = User.query.filter_by(email="jane@example.com").first()
+    user2 = User.query.filter_by(email="john@example.com").first()
+    weekly = SubscriptionTier.query.filter_by(name="Weekly Plan").first()
+    monthly = SubscriptionTier.query.filter_by(name="Monthly Plan").first()
+
+    
+    payment1 = Payment(
+        user=user1,
+        amount=3.00,
+        payment_method="mobile_money",
+        transaction_reference="TXN1001",
+        status="completed"
+    )
+
+    payment2 = Payment(
+        user=user2,
+        amount=10.00,
+        payment_method="mobile_money",
+        transaction_reference="TXN1002",
+        status="completed"
+    )
+
+    db.session.add_all([payment1, payment2])
+    db.session.commit()
+
+    
+    sub1 = Subscription(
+        user=user1,
+        tier=weekly,
+        start_date=datetime.utcnow(),
+        end_date=datetime.utcnow() + timedelta(days=7),
+        status="active",
+        payment_id=payment1.id,
+        auto_renew=True
+    )
+
+    sub2 = Subscription(
+        user=user2,
+        tier=monthly,
+        start_date=datetime.utcnow(),
+        end_date=datetime.utcnow() + timedelta(days=30),
+        status="active",
+        payment_id=payment2.id,
+        auto_renew=False
+    )
+
+    db.session.add_all([sub1, sub2])
     db.session.commit()
 
     
