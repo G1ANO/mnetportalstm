@@ -121,3 +121,65 @@ with app.app_context():
     db.session.commit()
 
     
+from app import app, db
+from models import User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Redemption
+
+with app.app_context():
+    user1 = User.query.filter_by(email="jane@example.com").first()
+    user2 = User.query.filter_by(email="john@example.com").first()
+    weekly = SubscriptionTier.query.filter_by(name="Weekly Plan").first()
+    monthly = SubscriptionTier.query.filter_by(name="Monthly Plan").first()
+
+    
+    feedback1 = Feedback(
+        user=user1,
+        tier=weekly,
+        rating=5,
+        comment="Fast and reliable WiFi! Very satisfied."
+    )
+
+    feedback2 = Feedback(
+        user=user2,
+        tier=monthly,
+        rating=4,
+        comment="Good performance, but a bit slow during peak hours."
+    )
+
+    
+    complaint1 = Complaint(
+        user=user1,
+        subject="Connection issue",
+        description="WiFi disconnects every few minutes.",
+        status="resolved",
+        admin_response="We fixed the router near your location."
+    )
+
+    complaint2 = Complaint(
+        user=user2,
+        subject="Payment delay",
+        description="My payment took too long to confirm.",
+        status="pending"
+    )
+
+    
+    lp1 = LoyaltyPoint(user=user1, points_earned=50, points_redeemed=10, balance=40)
+    lp2 = LoyaltyPoint(user=user2, points_earned=80, points_redeemed=20, balance=60)
+
+    
+    redeem1 = Redemption(
+        user=user1,
+        points_used=10,
+        reward_type="Free WiFi Day",
+        metadata="Redeemed for 1-day access"
+    )
+
+    db.session.add_all([
+        feedback1, feedback2,
+        complaint1, complaint2,
+        lp1, lp2,
+        redeem1
+    ])
+    db.session.commit()
+
+    
+
