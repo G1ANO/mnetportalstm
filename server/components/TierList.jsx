@@ -30,12 +30,30 @@ const TierList = ({ onSubscribe, isAdmin = false }) => {
       setLoading(false);
     }
   };
-    const handleDelete = async (id) => {
-    if (deletingId) return; // Prevent multiple deletions at once
-    setDeletingId(id);
-    try {
-      const response = await fetch(`/api/tiers/${id}`, {
-        method: 'DELETE',
-      });
-    
+    const handleDelete = async (tierId) => {
+    if (!window.confirm('Are you sure you want to delete this tier? This action cannot be undone.')) {
+      return;
     }
+
+    try {
+      setDeletingId(tierId);
+      const response = await fetch(`/api/tiers/${tierId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete tier');
+      }
+
+      setTiers(tiers.filter(tier => tier.id !== tierId));
+    } catch (err) {
+      alert('Error deleting tier: ' + err.message);
+      console.error('Error deleting tier:', err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+  
