@@ -54,12 +54,12 @@ const TierForm = ({ onTierAdded }) => {
       setError('Tier name is required');
       return false;
     }
-    
+
     if (!formData.price || parseFloat(formData.price) <= 0) {
       setError('Price must be greater than 0');
       return false;
     }
-    
+
     if (!formData.description.trim()) {
       setError('Description is required');
       return false;
@@ -70,6 +70,12 @@ const TierForm = ({ onTierAdded }) => {
       setError('At least one feature is required');
       return false;
     }
+
+    // Update formData to remove empty features
+    setFormData(prev => ({
+      ...prev,
+      features: validFeatures
+    }));
 
     return true;
   };
@@ -135,7 +141,7 @@ const TierForm = ({ onTierAdded }) => {
       setTimeout(() => setSuccess(false), 3000);
 
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Network error occurred. Please try again.');
       console.error('Error creating tier:', err);
     } finally {
       setLoading(false);
@@ -154,7 +160,7 @@ const TierForm = ({ onTierAdded }) => {
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+        <div id="form-error" className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3" role="alert" aria-live="polite">
           <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-200 flex items-center justify-center text-red-800 font-bold text-sm">!</div>
           <p className="text-red-800">{error}</p>
         </div>
