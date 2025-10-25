@@ -56,4 +56,42 @@ const TierList = ({ onSubscribe, isAdmin = false }) => {
       setDeletingId(null);
     }
   };
-  
+     const handleSubscribe = (tier) => {
+    if (onSubscribe) {
+      onSubscribe(tier);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-800 font-medium">Error loading subscription tiers</p>
+        <p className="text-red-600 text-sm mt-2">{error}</p>
+        <button 
+          onClick={fetchTiers}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (tiers.length === 0) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+        <p className="text-gray-600 text-lg">No subscription tiers available yet.</p>
+        {isAdmin && (
+          <p className="text-gray-500 text-sm mt-2">Add your first tier using the form above.</p>
+        )}
+      </div>
+    );
+  }
