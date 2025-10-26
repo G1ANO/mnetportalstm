@@ -115,7 +115,7 @@ class Redemption(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     points_used = db.Column(db.Integer)
     reward_type = db.Column(db.String(100))
-    metadata = db.Column(db.Text)
+    details = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):
