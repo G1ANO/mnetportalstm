@@ -96,8 +96,7 @@ class Complaint(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    #i create a complaint model that stores user complaints or service issues and also admins can reply and update their status.
-    
+
 class LoyaltyPoint(db.Model):
     __tablename__ = 'loyalty_points'
 
