@@ -1,7 +1,6 @@
-
 from app import app, db
-from models import User, SubscriptionTier
-from datetime import datetime
+from models import User, SubscriptionTier, Payment, Subscription, Feedback, Complaint, LoyaltyPoint, Redemption, Notification, UsagePattern, AdminActionLog
+from datetime import datetime, timedelta
 
 with app.app_context():
     db.drop_all()
@@ -33,7 +32,7 @@ with app.app_context():
         role="user",
         status="active"
     )
-     user2.set_password("password123")
+    user2.set_password("password123")
 
     weekly = SubscriptionTier(
         name="Weekly Plan",
@@ -65,18 +64,6 @@ with app.app_context():
     db.session.add_all([admin, user1, user2, weekly, monthly, premium])
     db.session.commit()
 
-    
-from app import app, db
-from models import User, SubscriptionTier, Payment, Subscription
-from datetime import datetime, timedelta
-
-with app.app_context():
-    user1 = User.query.filter_by(email="jane@example.com").first()
-    user2 = User.query.filter_by(email="john@example.com").first()
-    weekly = SubscriptionTier.query.filter_by(name="Weekly Plan").first()
-    monthly = SubscriptionTier.query.filter_by(name="Monthly Plan").first()
-
-    
     payment1 = Payment(
         user=user1,
         amount=3.00,
@@ -103,8 +90,7 @@ with app.app_context():
         start_date=datetime.utcnow(),
         end_date=datetime.utcnow() + timedelta(days=7),
         status="active",
-        payment_id=payment1.id,
-        auto_renew=True
+        
     )
 
     sub2 = Subscription(
@@ -113,24 +99,12 @@ with app.app_context():
         start_date=datetime.utcnow(),
         end_date=datetime.utcnow() + timedelta(days=30),
         status="active",
-        payment_id=payment2.id,
-        auto_renew=False
+        
     )
 
     db.session.add_all([sub1, sub2])
     db.session.commit()
 
-    
-from app import app, db
-from models import User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Redemption
-
-with app.app_context():
-    user1 = User.query.filter_by(email="jane@example.com").first()
-    user2 = User.query.filter_by(email="john@example.com").first()
-    weekly = SubscriptionTier.query.filter_by(name="Weekly Plan").first()
-    monthly = SubscriptionTier.query.filter_by(name="Monthly Plan").first()
-
-    
     feedback1 = Feedback(
         user=user1,
         tier=weekly,
@@ -145,7 +119,6 @@ with app.app_context():
         comment="Good performance, but a bit slow during peak hours."
     )
 
-    
     complaint1 = Complaint(
         user=user1,
         subject="Connection issue",
@@ -161,7 +134,9 @@ with app.app_context():
         status="pending"
     )
 
-    
+    db.session.add_all([feedback1, feedback2, complaint1, complaint2])
+    db.session.commit()
+
     lp1 = LoyaltyPoint(user=user1, points_earned=50, points_redeemed=10, balance=40)
     lp2 = LoyaltyPoint(user=user2, points_earned=80, points_redeemed=20, balance=60)
 
@@ -174,23 +149,11 @@ with app.app_context():
     )
 
     db.session.add_all([
-        feedback1, feedback2,
-        complaint1, complaint2,
         lp1, lp2,
         redeem1
     ])
     db.session.commit()
-
-    
-from app import app, db
-from models import User, Notification, UsagePattern, AdminActionLog
-
-with app.app_context():
-    user1 = User.query.filter_by(email="jane@example.com").first()
-    user2 = User.query.filter_by(email="john@example.com").first()
-    admin = User.query.filter_by(email="admin@example.com").first()
-
-    
+  
     notif1 = Notification(
         user=user1,
         message="Your Weekly Plan will expire in 2 days.",
@@ -234,6 +197,6 @@ with app.app_context():
 
     db.session.add_all([notif1, notif2, usage1, usage2, log1])
     db.session.commit()
-
+    print(" Database seeded successfully with sample data!")
     
 
