@@ -1,7 +1,7 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
 from flask_cors import CORS
-from models import db, bcrypt, User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Notification
+from models import db, bcrypt, User, SubscriptionTier, Subscription, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
 
 app = Flask(__name__)
