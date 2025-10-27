@@ -59,6 +59,37 @@ const AdminDashboard = ({ user }) => {
 
       <section className="complaints-section">
         <h3>User Complaints</h3>
+        <div className="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>User</th>
+          <th>Status</th>
+          <th>Response</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {complaints.map(c => (
+          <tr key={c.id}>
+            <td>{c.subject}</td>
+            <td>{c.user_id}</td>
+            <td>
+              <span className={`status-badge ${c.status.toLowerCase()}`}>
+                {c.status}
+              </span>
+            </td>
+            <td>{c.admin_response || '-'}</td>
+            <td>
+              <button className="reply-btn">Reply</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
       </section>
     </div>
   );
