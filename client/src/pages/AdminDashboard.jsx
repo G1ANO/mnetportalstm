@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import TierForm from '../components/TierForm';
 
 const AdminDashboard = ({ user }) => {
   const [tiers, setTiers] = useState([]);
@@ -29,6 +30,20 @@ const AdminDashboard = ({ user }) => {
 
       <section className="tier-section">
         <h3>Manage Subscription Tiers</h3>
+        <TierForm adminId={user.id} onTierAdded={fetchTiers} />
+
+  <div className="tier-cards">
+    {tiers.map(tier => (
+      <div key={tier.id} className="tier-card">
+        <h4>{tier.name}</h4>
+        <p>{tier.description}</p>
+        <p>Price: ${tier.price}</p>
+        <p>Duration: {tier.duration_days} days</p>
+        <p>Speed: {tier.speed_limit} Mbps</p>
+        <p>Data: {tier.data_limit} MB</p>
+      </div>
+    ))}
+  </div>
       </section>
 
       <section className="complaints-section">
