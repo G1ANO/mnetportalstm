@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import TierForm from '../components/TierForm';
+import "../styles/App.css"
 
 const AdminDashboard = ({ user }) => {
   const [tiers, setTiers] = useState([]);
@@ -38,8 +39,6 @@ const AdminDashboard = ({ user }) => {
       .then(() => fetchComplaints())
       .catch(err => alert(err.response.data.error));
   };
-
-
 
   return (
     <div className="admin-dashboard">
@@ -98,9 +97,8 @@ const AdminDashboard = ({ user }) => {
       </tbody>
     </table>
   </div>
-
-      </section>
-    </div>
+</section>
+</div>
   );
 };
 
