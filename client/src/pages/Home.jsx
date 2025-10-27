@@ -1,7 +1,6 @@
-import React from 'react';
 import '../index.css';
 
-export const HomePage = ({ user, onLogout }) => {
+export const HomePage = ({ user }) => {
   const connectionDetails = {
     networkName: "Mnet Hotspot",
     speed: "50 Mbps",
@@ -19,28 +18,9 @@ export const HomePage = ({ user, onLogout }) => {
       <div className="container">
         {/* Header */}
         <div style={styles.header}>
-          <div style={styles.headerContent}>
-            <div style={styles.iconContainer}>
-              <svg
-                style={styles.icon}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
-                />
-              </svg>
-            </div>
-            <h1 style={styles.heading}>Welcome to {connectionDetails.networkName}</h1>
-            <p style={styles.subHeading}>Hello, {user.username}!</p>
-          </div>
-          <button onClick={onLogout} className="btn-secondary" style={styles.logoutButton}>
+          <div style={styles.iconContainer}>
             <svg
-              style={styles.buttonIcon}
+              style={styles.icon}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -49,11 +29,12 @@ export const HomePage = ({ user, onLogout }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
               />
             </svg>
-            Logout
-          </button>
+          </div>
+          <h1 style={styles.heading}>Welcome to {connectionDetails.networkName}</h1>
+          <p style={styles.subHeading}>Hello, {user.username}!</p>
         </div>
 
         {/* ADMIN DASHBOARD */}
@@ -171,16 +152,8 @@ const styles = {
     paddingBottom: '2rem',
   },
   header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '3rem',
-    flexWrap: 'wrap',
-    gap: '1rem',
-  },
-  headerContent: {
-    flex: 1,
     textAlign: 'center',
+    marginBottom: '3rem',
   },
   iconContainer: {
     display: 'inline-flex',
@@ -210,15 +183,6 @@ const styles = {
   subHeading: {
     fontSize: '1.25rem',
     color: '#94a3b8',
-  },
-  logoutButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  buttonIcon: {
-    width: '20px',
-    height: '20px',
   },
   adminPanel: {
     marginBottom: '2rem',

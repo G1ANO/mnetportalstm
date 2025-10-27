@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import TierForm from '../components/TierForm';
-import "../styles/App.css"
+import "../index.css"
 
 const AdminDashboard = ({ user }) => {
   const [tiers, setTiers] = useState([]);
