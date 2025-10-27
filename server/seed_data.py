@@ -138,7 +138,8 @@ def create_tiers():
             'duration_days': 1,  # Using as hours
             'speed_limit': 10,
             'data_limit': 500,
-            'description': 'Perfect for quick browsing and social media'
+            'description': 'Perfect for quick browsing and social media',
+            'tier_type': 'hotspot'
         },
         {
             'name': '3 Hour Plan',
@@ -146,7 +147,8 @@ def create_tiers():
             'duration_days': 3,
             'speed_limit': 20,
             'data_limit': 1500,
-            'description': 'Great for streaming and downloads'
+            'description': 'Great for streaming and downloads',
+            'tier_type': 'hotspot'
         },
         {
             'name': '6 Hour Plan',
@@ -154,7 +156,8 @@ def create_tiers():
             'duration_days': 6,
             'speed_limit': 30,
             'data_limit': 3000,
-            'description': 'Ideal for work and entertainment'
+            'description': 'Ideal for work and entertainment',
+            'tier_type': 'hotspot'
         },
         {
             'name': '12 Hour Plan',
@@ -162,7 +165,8 @@ def create_tiers():
             'duration_days': 12,
             'speed_limit': 50,
             'data_limit': 6000,
-            'description': 'Best value for all-day connectivity'
+            'description': 'Best value for all-day connectivity',
+            'tier_type': 'hotspot'
         },
         {
             'name': '24 Hour Plan',
@@ -170,7 +174,8 @@ def create_tiers():
             'duration_days': 24,
             'speed_limit': 100,
             'data_limit': 12000,
-            'description': 'Unlimited browsing for a full day'
+            'description': 'Unlimited browsing for a full day',
+            'tier_type': 'hotspot'
         },
         {
             'name': 'Weekly Plan',
@@ -178,7 +183,8 @@ def create_tiers():
             'duration_days': 168,  # 7 days in hours
             'speed_limit': 100,
             'data_limit': 50000,
-            'description': 'One week of high-speed internet'
+            'description': 'One week of high-speed internet',
+            'tier_type': 'hotspot'
         },
         # Home Internet Plans (monthly)
         {
@@ -187,7 +193,8 @@ def create_tiers():
             'duration_days': 720,  # 30 days in hours
             'speed_limit': 10,
             'data_limit': 100000,
-            'description': 'Reliable home internet for basic browsing and streaming'
+            'description': 'Reliable home internet for basic browsing and streaming',
+            'tier_type': 'home_internet'
         },
         {
             'name': 'Home Internet 20 Mbps',
@@ -195,7 +202,8 @@ def create_tiers():
             'duration_days': 720,
             'speed_limit': 20,
             'data_limit': 200000,
-            'description': 'Fast home internet for HD streaming and gaming'
+            'description': 'Fast home internet for HD streaming and gaming',
+            'tier_type': 'home_internet'
         },
         {
             'name': 'Home Internet 30 Mbps',
@@ -203,7 +211,8 @@ def create_tiers():
             'duration_days': 720,
             'speed_limit': 30,
             'data_limit': 300000,
-            'description': 'Ultra-fast home internet for multiple devices and 4K streaming'
+            'description': 'Ultra-fast home internet for multiple devices and 4K streaming',
+            'tier_type': 'home_internet'
         }
     ]
     

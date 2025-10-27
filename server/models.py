@@ -44,6 +44,7 @@ class SubscriptionTier(db.Model):
     speed_limit = db.Column(db.Integer)
     data_limit = db.Column(db.Integer)
     description = db.Column(db.Text)
+    tier_type = db.Column(db.String(20), default='hotspot')  # 'hotspot' or 'home_internet'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -55,7 +55,13 @@ def login():
 
 @app.route('/tiers', methods=['GET'])
 def get_tiers():
-    tiers = SubscriptionTier.query.all()
+    tier_type = request.args.get('type')  # Optional filter: 'hotspot' or 'home_internet'
+
+    if tier_type:
+        tiers = SubscriptionTier.query.filter_by(tier_type=tier_type).all()
+    else:
+        tiers = SubscriptionTier.query.all()
+
     result = [{
         "id": t.id,
         "name": t.name,
@@ -63,14 +69,15 @@ def get_tiers():
         "duration_days": t.duration_days,
         "speed_limit": t.speed_limit,
         "data_limit": t.data_limit,
-        "description": t.description
+        "description": t.description,
+        "tier_type": t.tier_type
     } for t in tiers]
     return jsonify(result), 200
 
 @app.route('/tiers', methods=['POST'])
 def create_tier():
     data = request.get_json()
-    admin_id = data.get('admin_id')  
+    admin_id = data.get('admin_id')
     admin = User.query.get(admin_id)
 
     if not admin or admin.role != 'admin':
@@ -82,7 +89,8 @@ def create_tier():
         duration_days=data.get('duration_days'),
         speed_limit=data.get('speed_limit'),
         data_limit=data.get('data_limit'),
-        description=data.get('description')
+        description=data.get('description'),
+        tier_type=data.get('tier_type', 'hotspot')  # Default to 'hotspot'
     )
     db.session.add(tier)
     db.session.commit()

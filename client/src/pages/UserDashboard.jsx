@@ -42,7 +42,8 @@ const UserDashboard = ({ user }) => {
 
   const fetchTiers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/tiers");
+      // Fetch only hotspot tiers
+      const res = await axios.get("http://localhost:5000/tiers?type=hotspot");
       setTiers(res.data);
     } catch (err) {
       console.error("Error fetching tiers:", err);

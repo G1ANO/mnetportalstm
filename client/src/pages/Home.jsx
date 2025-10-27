@@ -18,13 +18,9 @@ export const HomePage = ({ user }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch home internet tiers (monthly plans)
-      const tiersRes = await axios.get('http://localhost:5000/tiers');
-      // Filter for home internet plans (monthly plans with higher speeds)
-      const homeInternetPlans = tiersRes.data.filter(tier =>
-        tier.duration_days >= 720 || tier.name.toLowerCase().includes('home')
-      );
-      setHomeTiers(homeInternetPlans);
+      // Fetch home internet tiers only
+      const tiersRes = await axios.get('http://localhost:5000/tiers?type=home_internet');
+      setHomeTiers(tiersRes.data);
 
       // Fetch user subscription
       const subRes = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}`);
@@ -615,7 +611,7 @@ export const HomePage = ({ user }) => {
                   <div className="card-header">
                     <h3 className="card-title">📝 Submit Feedback</h3>
                   </div>
-                  <FeedbackForm userId={user.id} />
+                  <FeedbackForm userId={user.id} tiers={homeTiers} />
                 </div>
 
                 <div className="card">
