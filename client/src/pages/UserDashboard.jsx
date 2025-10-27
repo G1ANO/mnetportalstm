@@ -1,17 +1,32 @@
 import React from "react";
 import axios from "axios";
+import FeedbackForm from "../components/FeedbackForm";
 
 const UserDashboard = ({ user }) => {
   const [subscription, setSubscription] = useState(null);
+  const [tiers, setTiers] = useState([]);
+
 
   useEffect(() => {
+    fetchSubscription();
+    fetchTiers();
+  }, []);
+    const fetchSubscription = () =>{
     axios
       .get(`http://localhost:5000/subscriptions?user_id=${user.id}`)
       .then((res) => {
         if (res.data.length > 0) setSubscription(res.data[0]);
       })
       .catch((err) => console.error(err));
-  }, []);
+  };
+
+    const fetchTiers = () => {
+    axios
+      .get("http://localhost:5000/tiers")
+      .then((res) => setTiers(res.data))
+      .catch((err) => console.error(err));
+  };
+
 
   return (
     <div className="user-dashboard">
@@ -33,6 +48,7 @@ const UserDashboard = ({ user }) => {
 
       <section className="feedback-section">
         <h3>Submit Feedback</h3>
+        <FeedbackForm userId = {user.id} tiers={tiers}/>
       </section>
 
       <section className="complaint-section">
