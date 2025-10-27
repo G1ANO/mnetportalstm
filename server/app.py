@@ -1,10 +1,12 @@
 from flask import Flask, jsonify,request
 from flask_migrate import Migrate
+from flask_cors import CORS
 from models import db, bcrypt, User, SubscriptionTier, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
+CORS(app)  # Enable CORS for all routes
 
 db.init_app(app)
 bcrypt.init_app(app)
