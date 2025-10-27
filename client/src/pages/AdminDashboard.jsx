@@ -20,7 +20,8 @@ const AdminDashboard = ({ user }) => {
     duration_days: '',
     speed_limit: '',
     data_limit: '',
-    description: ''
+    description: '',
+    tier_type: 'hotspot'
   });
 
   // Communication form state
@@ -56,7 +57,8 @@ const AdminDashboard = ({ user }) => {
 
   const fetchTiers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/tiers');
+      // Fetch only hotspot tiers
+      const res = await axios.get('http://localhost:5000/tiers?type=hotspot');
       setTiers(res.data);
     } catch(err) {
       console.error("Error fetching tiers:", err);
@@ -104,11 +106,12 @@ const AdminDashboard = ({ user }) => {
     try {
       await axios.post('http://localhost:5000/tiers', {
         ...tierForm,
+        tier_type: 'hotspot',
         admin_id: user.id
       });
-      alert('Tier created successfully!');
+      alert('Hotspot tier created successfully!');
       setShowTierForm(false);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '' });
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
       fetchTiers();
     } catch (err) {
       alert('Error creating tier: ' + err.message);
@@ -120,11 +123,12 @@ const AdminDashboard = ({ user }) => {
     try {
       await axios.patch(`http://localhost:5000/tiers/${editingTier.id}`, {
         ...tierForm,
+        tier_type: 'hotspot',
         admin_id: user.id
       });
-      alert('Tier updated successfully!');
+      alert('Hotspot tier updated successfully!');
       setEditingTier(null);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '' });
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
       fetchTiers();
     } catch (err) {
       alert('Error updating tier: ' + err.message);
@@ -132,7 +136,7 @@ const AdminDashboard = ({ user }) => {
   };
 
   const deleteTier = async (tierId) => {
-    if (!window.confirm("Are you sure you want to delete this tier?")) return;
+    if (!window.confirm("Are you sure you want to delete this hotspot tier?")) return;
     try {
       await axios.delete(`http://localhost:5000/tiers/${tierId}`, {
         data: { admin_id: user.id },
@@ -151,7 +155,8 @@ const AdminDashboard = ({ user }) => {
       duration_days: tier.duration_days,
       speed_limit: tier.speed_limit,
       data_limit: tier.data_limit,
-      description: tier.description
+      description: tier.description,
+      tier_type: 'hotspot'
     });
   };
 
@@ -227,7 +232,8 @@ const AdminDashboard = ({ user }) => {
   return (
     <div style={styles.container}>
       <div className="container">
-        <h1 style={styles.title}>Admin Dashboard</h1>
+        <h1 style={styles.title}>Admin Dashboard - Hotspot Management</h1>
+        <p style={styles.subtitle}>Manage hotspot plans and subscriptions</p>
 
         {/* Tab Navigation */}
         <div style={styles.tabContainer}>
@@ -235,54 +241,54 @@ const AdminDashboard = ({ user }) => {
             onClick={() => setActiveTab('tiers')}
             style={{...styles.tab, ...(activeTab === 'tiers' ? styles.activeTab : {})}}
           >
-            📊 Subscription Tiers
+            Hotspot Plans
           </button>
           <button
             onClick={() => setActiveTab('users')}
             style={{...styles.tab, ...(activeTab === 'users' ? styles.activeTab : {})}}
           >
-            👥 Active Users
+            Active Users
           </button>
           <button
             onClick={() => setActiveTab('loyalty')}
             style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.activeTab : {})}}
           >
-            🎁 Loyalty Program
+            Loyalty Program
           </button>
           <button
             onClick={() => setActiveTab('feedback')}
             style={{...styles.tab, ...(activeTab === 'feedback' ? styles.activeTab : {})}}
           >
-            💬 Feedback & Complaints
+            Feedback & Complaints
           </button>
           <button
             onClick={() => setActiveTab('communication')}
             style={{...styles.tab, ...(activeTab === 'communication' ? styles.activeTab : {})}}
           >
-            📧 Communications
+            Communications
           </button>
         </div>
 
-        {/* Subscription Tiers Tab */}
+        {/* Hotspot Plans Tab */}
         {activeTab === 'tiers' && (
           <div style={styles.tabContent}>
             <div style={styles.sectionHeader}>
-              <h2>Manage Subscription Tiers</h2>
+              <h2>Manage Hotspot Plans</h2>
               <button
                 onClick={() => {
                   setShowTierForm(!showTierForm);
                   setEditingTier(null);
-                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '' });
+                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
                 }}
                 className="btn-primary"
               >
-                {showTierForm ? '✕ Cancel' : '+ Add New Tier'}
+                {showTierForm ? 'Cancel' : '+ Add New Plan'}
               </button>
             </div>
 
             {(showTierForm || editingTier) && (
               <div className="card" style={styles.formCard}>
-                <h3>{editingTier ? 'Edit Tier' : 'Create New Tier'}</h3>
+                <h3>{editingTier ? 'Edit Hotspot Plan' : 'Create New Hotspot Plan'}</h3>
                 <form onSubmit={editingTier ? handleUpdateTier : handleCreateTier} style={styles.form}>
                   <div style={styles.formGrid}>
                     <div>
@@ -680,9 +686,15 @@ const styles = {
     gap: '1rem',
   },
   title: {
-    fontSize: '2rem',
+    fontSize: '2.5rem',
     fontWeight: '700',
     color: '#f1f5f9',
+    marginBottom: '0.5rem',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: '1.1rem',
+    color: '#94a3b8',
     marginBottom: '2rem',
     textAlign: 'center',
   },

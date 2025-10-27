@@ -8,7 +8,7 @@ import random
 
 def clear_database():
     """Clear all existing data"""
-    print("🗑️  Clearing existing data...")
+    print("Clearing existing data...")
     with app.app_context():
         db.session.query(Notification).delete()
         db.session.query(Feedback).delete()
@@ -18,11 +18,11 @@ def clear_database():
         db.session.query(SubscriptionTier).delete()
         db.session.query(User).delete()
         db.session.commit()
-    print("✅ Database cleared!")
+    print("Database cleared!")
 
 def create_users():
     """Create sample users"""
-    print("\n👥 Creating users...")
+    print("\nCreating users...")
     
     users_data = [
         # Admin user
@@ -123,12 +123,12 @@ def create_users():
         users.append(user)
     
     db.session.commit()
-    print(f"✅ Created {len(users)} users")
+    print(f"Created {len(users)} users")
     return users
 
 def create_tiers():
     """Create subscription tiers"""
-    print("\n📊 Creating subscription tiers...")
+    print("\nCreating subscription tiers...")
 
     tiers_data = [
         # Hotspot Plans (hourly/daily)
@@ -223,12 +223,12 @@ def create_tiers():
         tiers.append(tier)
     
     db.session.commit()
-    print(f"✅ Created {len(tiers)} subscription tiers")
+    print(f"Created {len(tiers)} subscription tiers")
     return tiers
 
 def create_subscriptions(users, tiers):
     """Create sample subscriptions"""
-    print("\n📋 Creating subscriptions...")
+    print("\nCreating subscriptions...")
     
     subscriptions = []
     # Skip admin user (index 0), create subscriptions for regular users
@@ -253,12 +253,12 @@ def create_subscriptions(users, tiers):
         subscriptions.append(subscription)
     
     db.session.commit()
-    print(f"✅ Created {len(subscriptions)} subscriptions")
+    print(f"Created {len(subscriptions)} subscriptions")
     return subscriptions
 
 def create_loyalty_points(users):
     """Create loyalty points for users"""
-    print("\n🎁 Creating loyalty points...")
+    print("\nCreating loyalty points...")
     
     loyalty_records = []
     # Skip admin user
@@ -277,12 +277,12 @@ def create_loyalty_points(users):
         loyalty_records.append(loyalty)
     
     db.session.commit()
-    print(f"✅ Created {len(loyalty_records)} loyalty records")
+    print(f"Created {len(loyalty_records)} loyalty records")
     return loyalty_records
 
 def create_feedbacks(users, tiers):
     """Create sample feedback"""
-    print("\n💬 Creating feedback...")
+    print("\nCreating feedback...")
     
     comments = [
         "Great service! Very fast internet.",
@@ -310,12 +310,12 @@ def create_feedbacks(users, tiers):
             feedbacks.append(feedback)
     
     db.session.commit()
-    print(f"✅ Created {len(feedbacks)} feedback entries")
+    print(f"Created {len(feedbacks)} feedback entries")
     return feedbacks
 
 def create_complaints(users):
     """Create sample complaints"""
-    print("\n📢 Creating complaints...")
+    print("\nCreating complaints...")
     
     complaints_data = [
         {
@@ -361,12 +361,12 @@ def create_complaints(users):
         complaints.append(complaint)
     
     db.session.commit()
-    print(f"✅ Created {len(complaints)} complaints")
+    print(f"Created {len(complaints)} complaints")
     return complaints
 
 def create_notifications(users):
     """Create sample notifications"""
-    print("\n🔔 Creating notifications...")
+    print("\nCreating notifications...")
     
     notifications = []
     for user in users[1:]:
@@ -391,13 +391,13 @@ def create_notifications(users):
             notifications.append(notification)
     
     db.session.commit()
-    print(f"✅ Created {len(notifications)} notifications")
+    print(f"Created {len(notifications)} notifications")
     return notifications
 
 def main():
     """Main function to seed the database"""
     print("\n" + "="*50)
-    print("🌱 SEEDING DATABASE WITH SAMPLE DATA")
+    print("SEEDING DATABASE WITH SAMPLE DATA")
     print("="*50)
     
     with app.app_context():
@@ -414,9 +414,9 @@ def main():
         notifications = create_notifications(users)
         
         print("\n" + "="*50)
-        print("✅ DATABASE SEEDING COMPLETED!")
+        print("DATABASE SEEDING COMPLETED!")
         print("="*50)
-        print("\n📊 Summary:")
+        print("\nSummary:")
         print(f"   • Users: {len(users)} (1 admin, {len(users)-1} regular users)")
         print(f"   • Subscription Tiers: {len(tiers)} (6 hotspot + 3 home internet)")
         print(f"   • Active Subscriptions: {len(subscriptions)}")
@@ -424,15 +424,15 @@ def main():
         print(f"   • Feedback Entries: {len(feedbacks)}")
         print(f"   • Complaints: {len(complaints)}")
         print(f"   • Notifications: {len(notifications)}")
-        
-        print("\n🔐 Test Credentials:")
+
+        print("\nTest Credentials:")
         print("   Admin:")
         print("     Email: admin@mnet.com")
         print("     Password: admin123")
         print("\n   Regular Users:")
         print("     Email: john@example.com (or jane, bob, alice, etc.)")
         print("     Password: password123")
-        print("\n🚀 You can now test the application with sample data!")
+        print("\nYou can now test the application with sample data!")
         print("="*50 + "\n")
 
 if __name__ == '__main__':

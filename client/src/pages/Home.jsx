@@ -395,7 +395,7 @@ export const HomePage = ({ user }) => {
               />
             </svg>
           </div>
-          <h1 style={styles.heading}>🏠 Home Internet</h1>
+          <h1 style={styles.heading}>Home Internet</h1>
           <p style={styles.subHeading}>Reliable high-speed internet for your home</p>
         </div>
 
@@ -405,25 +405,25 @@ export const HomePage = ({ user }) => {
             onClick={() => setActiveTab('plans')}
             style={{...styles.tab, ...(activeTab === 'plans' ? styles.tabActive : {})}}
           >
-            📶 Home Internet Plans
+            Home Internet Plans
           </button>
           <button
             onClick={() => setActiveTab('myplan')}
             style={{...styles.tab, ...(activeTab === 'myplan' ? styles.tabActive : {})}}
           >
-            📋 My Connection
+            My Connection
           </button>
           <button
             onClick={() => setActiveTab('loyalty')}
             style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.tabActive : {})}}
           >
-            🎁 Loyalty Program
+            Loyalty Program
           </button>
           <button
             onClick={() => setActiveTab('feedback')}
             style={{...styles.tab, ...(activeTab === 'feedback' ? styles.tabActive : {})}}
           >
-            💬 Feedback & Complaints
+            Feedback & Complaints
           </button>
         </div>
 
@@ -463,7 +463,7 @@ export const HomePage = ({ user }) => {
                           <span>Speed: {tier.speed_limit} Mbps</span>
                         </div>
                         <div style={styles.feature}>
-                          <span style={styles.featureIcon}>📊</span>
+                          <span style={styles.featureIcon}>Data:</span>
                           <span>Data: {tier.data_limit >= 1000 ? `${tier.data_limit/1000} GB` : `${tier.data_limit} MB`}</span>
                         </div>
                         <div style={styles.feature}>
@@ -591,7 +591,7 @@ export const HomePage = ({ user }) => {
                     style={{marginTop: '2rem', width: '100%'}}
                     disabled={loyalty.balance === 0}
                   >
-                    🎁 Redeem Points
+                    Redeem Points
                   </button>
                 </div>
               </div>
@@ -616,7 +616,7 @@ export const HomePage = ({ user }) => {
 
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">📢 File a Complaint</h3>
+                    <h3 className="card-title">File a Complaint</h3>
                   </div>
                   <ComplaintForm userId={user.id} />
                 </div>

@@ -1,0 +1,695 @@
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
+import "../../index.css"
+
+const HomeInternetPanel = ({ user }) => {
+  const [activeTab, setActiveTab] = useState('tiers');
+  const [tiers, setTiers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loyaltyRecords, setLoyaltyRecords] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Tier form state
+  const [showTierForm, setShowTierForm] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
+  const [tierForm, setTierForm] = useState({
+    name: '',
+    price: '',
+    duration_days: '',
+    speed_limit: '',
+    data_limit: '',
+    description: '',
+    tier_type: 'home_internet'
+  });
+
+  useEffect(() => {
+    if (user && user.id) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchTiers(),
+        fetchUsers(),
+        fetchLoyaltyRecords(),
+        fetchFeedbacks(),
+        fetchComplaints()
+      ]);
+    } catch (err) {
+      console.error("Error loading admin data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTiers = async () => {
+    try {
+      // Fetch only home_internet tiers
+      const res = await axios.get('http://localhost:5000/tiers?type=home_internet');
+      setTiers(res.data);
+    } catch(err) {
+      console.error("Error fetching tiers:", err);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/users');
+      setUsers(res.data);
+    } catch(err) {
+      console.error("Error fetching users:", err);
+    }
+  };
+
+  const fetchLoyaltyRecords = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/loyalty/all');
+      setLoyaltyRecords(res.data);
+    } catch(err) {
+      console.error("Error fetching loyalty records:", err);
+    }
+  };
+
+  const fetchFeedbacks = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/feedbacks');
+      setFeedbacks(res.data);
+    } catch(err) {
+      console.error("Error fetching feedbacks:", err);
+    }
+  };
+
+  const fetchComplaints = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/complaints?user_id=${user.id}`);
+      setComplaints(res.data);
+    } catch (err) {
+      console.error("Error fetching complaints:", err);
+    }
+  };
+
+  const handleCreateTier = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/tiers', {
+        ...tierForm,
+        tier_type: 'home_internet',
+        admin_id: user.id
+      });
+      alert('Home Internet tier created successfully!');
+      setShowTierForm(false);
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+      fetchTiers();
+    } catch (err) {
+      alert('Error creating tier: ' + err.message);
+    }
+  };
+
+  const handleUpdateTier = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.patch(`http://localhost:5000/tiers/${editingTier.id}`, {
+        ...tierForm,
+        tier_type: 'home_internet',
+        admin_id: user.id
+      });
+      alert('Home Internet tier updated successfully!');
+      setEditingTier(null);
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+      fetchTiers();
+    } catch (err) {
+      alert('Error updating tier: ' + err.message);
+    }
+  };
+
+  const deleteTier = async (tierId) => {
+    if (!window.confirm("Are you sure you want to delete this home internet tier?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/tiers/${tierId}`, {
+        data: { admin_id: user.id },
+      });
+      fetchTiers();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to delete tier.");
+    }
+  };
+
+  const startEditTier = (tier) => {
+    setEditingTier(tier);
+    setTierForm({
+      name: tier.name,
+      price: tier.price,
+      duration_days: tier.duration_days,
+      speed_limit: tier.speed_limit,
+      data_limit: tier.data_limit,
+      description: tier.description,
+      tier_type: 'home_internet'
+    });
+    setShowTierForm(false);
+  };
+
+  const handleReplyComplaint = async (complaintId) => {
+    const response = prompt("Enter your response:");
+    if (!response) return;
+    
+    try {
+      await axios.patch(`http://localhost:5000/complaints/${complaintId}/reply`, {
+        admin_response: response,
+        admin_id: user.id
+      });
+      alert('Response sent successfully!');
+      fetchComplaints();
+    } catch (err) {
+      alert('Error sending response: ' + err.message);
+    }
+  };
+
+  if (!user) {
+    return <p className="loading-text">Loading user data...</p>;
+  }
+
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div className="spinner"></div>
+        <p>Loading home internet panel data...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.container}>
+      <div className="container">
+        <h1 style={styles.title}>Home Internet Panel</h1>
+        <p style={styles.subtitle}>Manage home internet plans and subscriptions</p>
+
+        {/* Tab Navigation */}
+        <div style={styles.tabContainer}>
+          <button
+            onClick={() => setActiveTab('tiers')}
+            style={{...styles.tab, ...(activeTab === 'tiers' ? styles.activeTab : {})}}
+          >
+            Home Internet Plans
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            style={{...styles.tab, ...(activeTab === 'users' ? styles.activeTab : {})}}
+          >
+            Subscribers
+          </button>
+          <button
+            onClick={() => setActiveTab('loyalty')}
+            style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.activeTab : {})}}
+          >
+            Loyalty Program
+          </button>
+          <button
+            onClick={() => setActiveTab('feedback')}
+            style={{...styles.tab, ...(activeTab === 'feedback' ? styles.activeTab : {})}}
+          >
+            Feedback & Complaints
+          </button>
+        </div>
+
+        {/* Home Internet Plans Tab */}
+        {activeTab === 'tiers' && (
+          <div style={styles.tabContent}>
+            <div style={styles.sectionHeader}>
+              <h2>Manage Home Internet Plans</h2>
+              <button
+                onClick={() => {
+                  setShowTierForm(!showTierForm);
+                  setEditingTier(null);
+                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+                }}
+                className="btn-primary"
+              >
+                {showTierForm ? 'Cancel' : '+ Add New Plan'}
+              </button>
+            </div>
+
+            {(showTierForm || editingTier) && (
+              <div className="card" style={styles.formCard}>
+                <h3>{editingTier ? 'Edit Home Internet Plan' : 'Create New Home Internet Plan'}</h3>
+                <form onSubmit={editingTier ? handleUpdateTier : handleCreateTier} style={styles.form}>
+                  <div style={styles.formGrid}>
+                    <div>
+                      <label className="form-label">Plan Name *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={tierForm.name}
+                        onChange={(e) => setTierForm({...tierForm, name: e.target.value})}
+                        placeholder="e.g., Home Internet 10 Mbps"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Price (KSH) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={tierForm.price}
+                        onChange={(e) => setTierForm({...tierForm, price: e.target.value})}
+                        placeholder="e.g., 1000"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Duration (Days) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={tierForm.duration_days}
+                        onChange={(e) => setTierForm({...tierForm, duration_days: e.target.value})}
+                        placeholder="e.g., 30 (monthly)"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Speed (Mbps) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={tierForm.speed_limit}
+                        onChange={(e) => setTierForm({...tierForm, speed_limit: e.target.value})}
+                        placeholder="e.g., 10"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Data Limit (MB) *</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={tierForm.data_limit}
+                        onChange={(e) => setTierForm({...tierForm, data_limit: e.target.value})}
+                        placeholder="e.g., 100000 (100GB)"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="form-label">Description</label>
+                    <textarea
+                      className="form-input"
+                      value={tierForm.description}
+                      onChange={(e) => setTierForm({...tierForm, description: e.target.value})}
+                      placeholder="Describe this home internet plan..."
+                      rows="3"
+                    />
+                  </div>
+                  <div style={styles.formActions}>
+                    <button type="submit" className="btn-primary">
+                      {editingTier ? 'Update Plan' : 'Create Plan'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        setShowTierForm(false);
+                        setEditingTier(null);
+                        setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Tiers Grid */}
+            <div style={styles.tiersGrid}>
+              {tiers.length === 0 ? (
+                <p style={styles.emptyState}>No home internet plans yet. Create one to get started!</p>
+              ) : (
+                tiers.map(tier => (
+                  <div key={tier.id} className="card" style={styles.tierCard}>
+                    <div style={styles.tierHeader}>
+                      <h3 style={styles.tierName}>{tier.name}</h3>
+                      <span style={styles.tierBadge}>Home Internet</span>
+                    </div>
+                    <div style={styles.tierPrice}>
+                      <span style={styles.currency}>KSH</span>
+                      <span style={styles.amount}>{tier.price}</span>
+                      <span style={styles.period}>/{tier.duration_days} days</span>
+                    </div>
+                    <p style={styles.tierDescription}>{tier.description}</p>
+                    <div style={styles.tierDetails}>
+                      <div style={styles.detailItem}>
+                        <span style={styles.detailLabel}>Speed:</span>
+                        <span style={styles.detailValue}>{tier.speed_limit} Mbps</span>
+                      </div>
+                      <div style={styles.detailItem}>
+                        <span style={styles.detailLabel}>Data:</span>
+                        <span style={styles.detailValue}>
+                          {tier.data_limit >= 1000 ? `${tier.data_limit/1000} GB` : `${tier.data_limit} MB`}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={styles.tierActions}>
+                      <button
+                        onClick={() => startEditTier(tier)}
+                        className="btn-secondary"
+                        style={{flex: 1}}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteTier(tier.id)}
+                        className="btn-danger"
+                        style={{flex: 1}}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div style={styles.tabContent}>
+            <h2>Home Internet Subscribers</h2>
+            <div className="card" style={{marginTop: '1rem'}}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(u => (
+                    <tr key={u.id}>
+                      <td>{u.id}</td>
+                      <td>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>
+                        <span className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}>
+                          {u.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Loyalty Tab */}
+        {activeTab === 'loyalty' && (
+          <div style={styles.tabContent}>
+            <h2>Loyalty Program Overview</h2>
+            <div className="card" style={{marginTop: '1rem'}}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Points Earned</th>
+                    <th>Points Redeemed</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loyaltyRecords.map(record => (
+                    <tr key={record.id}>
+                      <td>{record.user_id}</td>
+                      <td>{record.points_earned}</td>
+                      <td>{record.points_redeemed}</td>
+                      <td><strong>{record.balance}</strong></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback & Complaints Tab */}
+        {activeTab === 'feedback' && (
+          <div style={styles.tabContent}>
+            <h2>Feedback & Complaints</h2>
+
+            <div style={{marginTop: '1.5rem'}}>
+              <h3 style={{marginBottom: '1rem'}}>User Feedback</h3>
+              <div className="card">
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Tier</th>
+                      <th>Rating</th>
+                      <th>Comment</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {feedbacks.map(fb => (
+                      <tr key={fb.id}>
+                        <td>{fb.user_id}</td>
+                        <td>{fb.tier_id}</td>
+                        <td>
+                          <span style={styles.rating}>{'⭐'.repeat(fb.rating)}</span>
+                        </td>
+                        <td>{fb.comment}</td>
+                        <td>{new Date(fb.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style={{marginTop: '2rem'}}>
+              <h3 style={{marginBottom: '1rem'}}>User Complaints</h3>
+              <div className="card">
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Subject</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Response</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {complaints.map(complaint => (
+                      <tr key={complaint.id}>
+                        <td>{complaint.user_id}</td>
+                        <td>{complaint.subject}</td>
+                        <td>{complaint.description}</td>
+                        <td>
+                          <span className={`badge badge-${complaint.status === 'resolved' ? 'success' : 'warning'}`}>
+                            {complaint.status}
+                          </span>
+                        </td>
+                        <td>{complaint.admin_response || '-'}</td>
+                        <td>
+                          <button
+                            onClick={() => handleReplyComplaint(complaint.id)}
+                            className="btn-primary"
+                            style={{padding: '0.25rem 0.75rem', fontSize: '0.875rem'}}
+                          >
+                            Reply
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+    padding: '2rem 0',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '50vh',
+    gap: '1rem',
+  },
+  title: {
+    fontSize: '2.5rem',
+    fontWeight: '700',
+    color: '#f1f5f9',
+    marginBottom: '0.5rem',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: '1.1rem',
+    color: '#94a3b8',
+    marginBottom: '2rem',
+    textAlign: 'center',
+  },
+  tabContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '2rem',
+    borderBottom: '2px solid #334155',
+    flexWrap: 'wrap',
+  },
+  tab: {
+    background: 'transparent',
+    border: 'none',
+    color: '#cbd5e1',
+    padding: '0.75rem 1.5rem',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '500',
+    borderBottom: '2px solid transparent',
+    transition: 'all 0.2s',
+  },
+  activeTab: {
+    color: '#10b981',
+    borderBottomColor: '#10b981',
+  },
+  tabContent: {
+    animation: 'fadeIn 0.3s ease-in',
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1.5rem',
+  },
+  formCard: {
+    marginBottom: '2rem',
+  },
+  form: {
+    marginTop: '1rem',
+  },
+  formGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '1rem',
+    marginBottom: '1rem',
+  },
+  formActions: {
+    display: 'flex',
+    gap: '1rem',
+    marginTop: '1.5rem',
+  },
+  tiersGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: '1.5rem',
+    marginTop: '1.5rem',
+  },
+  tierCard: {
+    position: 'relative',
+  },
+  tierHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'start',
+    marginBottom: '1rem',
+  },
+  tierName: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: '#f1f5f9',
+    margin: 0,
+  },
+  tierBadge: {
+    background: '#10b981',
+    color: 'white',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '1rem',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+  },
+  tierPrice: {
+    marginBottom: '1rem',
+  },
+  currency: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+    marginRight: '0.25rem',
+  },
+  amount: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    color: '#10b981',
+  },
+  period: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+    marginLeft: '0.25rem',
+  },
+  tierDescription: {
+    color: '#cbd5e1',
+    marginBottom: '1rem',
+    lineHeight: '1.5',
+  },
+  tierDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+    marginBottom: '1rem',
+    padding: '1rem',
+    background: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: '0.5rem',
+  },
+  detailItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  detailLabel: {
+    color: '#94a3b8',
+    fontSize: '0.875rem',
+  },
+  detailValue: {
+    color: '#f1f5f9',
+    fontWeight: '600',
+    fontSize: '0.875rem',
+  },
+  tierActions: {
+    display: 'flex',
+    gap: '0.5rem',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  emptyState: {
+    textAlign: 'center',
+    color: '#94a3b8',
+    padding: '3rem',
+    fontSize: '1.1rem',
+  },
+  rating: {
+    fontSize: '1rem',
+  },
+};
+
+export default HomeInternetPanel;
+

@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import { HomePage } from "./pages/Home";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import HomeInternetPanel from "./pages/admin/HomeInternetPanel";
 import "./index.css";
 
 function App() {
@@ -18,8 +19,8 @@ function App() {
     localStorage.setItem('username', userData.username);
     localStorage.setItem('userEmail', userData.email);
     localStorage.setItem('isAdmin', userData.isAdmin);
-    // Redirect users to dashboard, admins to home
-    setCurrentPage(userData.isAdmin ? 'home' : 'dashboard');
+    // Redirect both users and admins to dashboard
+    setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
@@ -74,21 +75,21 @@ function App() {
                 onClick={() => navigateTo('home')}
                 style={{...styles.navLink, ...(currentPage === 'home' ? styles.navLinkActive : {})}}
               >
-                🏠 Home Internet
+                Home Internet
               </button>
             )}
             <button
               onClick={() => navigateTo('dashboard')}
               style={{...styles.navLink, ...(currentPage === 'dashboard' ? styles.navLinkActive : {})}}
             >
-              {user.isAdmin ? '📊 Admin Dashboard' : '📶 Mnet Hotspot'}
+              {user.isAdmin ? 'Admin Dashboard' : 'Mnet Hotspot'}
             </button>
             {user.isAdmin && (
               <button
-                onClick={() => navigateTo('admin')}
-                style={{...styles.navLink, ...(currentPage === 'admin' ? styles.navLinkActive : {})}}
+                onClick={() => navigateTo('homeInternetPanel')}
+                style={{...styles.navLink, ...(currentPage === 'homeInternetPanel' ? styles.navLinkActive : {})}}
               >
-                ⚙️ Admin Panel
+                Home Internet Panel
               </button>
             )}
           </div>
@@ -110,7 +111,7 @@ function App() {
         {currentPage === 'home' && <HomePage user={{...user, id: 1}} onLogout={handleLogout} />}
         {currentPage === 'dashboard' && !user.isAdmin && <UserDashboard user={{...user, id: 1}} />}
         {currentPage === 'dashboard' && user.isAdmin && <AdminDashboard user={{...user, id: 1}} />}
-        {currentPage === 'admin' && user.isAdmin && <AdminDashboard user={{...user, id: 1}} />}
+        {currentPage === 'homeInternetPanel' && user.isAdmin && <HomeInternetPanel user={{...user, id: 1}} />}
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ const LoyaltyPanel = ({ loyalty }) => {
 
   return (
     <div className="card">
-      <h3 style={{ marginBottom: '1rem', color: '#f1f5f9' }}>🎁 Loyalty Program</h3>
+      <h3 style={{ marginBottom: '1rem', color: '#f1f5f9' }}>Loyalty Program</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <div style={{
           display: 'flex',

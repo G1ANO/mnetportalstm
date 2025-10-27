@@ -107,25 +107,25 @@ const UserDashboard = ({ user }) => {
             onClick={() => setActiveTab('plans')}
             style={{...styles.tab, ...(activeTab === 'plans' ? styles.activeTab : {})}}
           >
-            📶 View Plans
+            View Plans
           </button>
           <button
             onClick={() => setActiveTab('myplan')}
             style={{...styles.tab, ...(activeTab === 'myplan' ? styles.activeTab : {})}}
           >
-            📋 My Plan
+            My Plan
           </button>
           <button
             onClick={() => setActiveTab('loyalty')}
             style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.activeTab : {})}}
           >
-            🎁 Loyalty Program
+            Loyalty Program
           </button>
           <button
             onClick={() => setActiveTab('feedback')}
             style={{...styles.tab, ...(activeTab === 'feedback' ? styles.activeTab : {})}}
           >
-            💬 Feedback & Complaints
+            Feedback & Complaints
           </button>
         </div>
 
@@ -230,7 +230,7 @@ const UserDashboard = ({ user }) => {
                     disabled={!loyalty.balance || loyalty.balance === 0}
                     style={{marginTop: '1rem'}}
                   >
-                    🎁 Redeem Points
+                    Redeem Points
                   </button>
                 </div>
               </div>
