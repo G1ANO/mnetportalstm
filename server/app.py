@@ -236,6 +236,188 @@ def get_notifications():
 
     return jsonify(result), 200
 
+@app.route('/users', methods=['GET'])
+def get_users():
+    """Get all users with their subscription info (admin only)."""
+    users = User.query.all()
+    result = []
+    for u in users:
+        # Get user's active subscription
+        subscription = db.session.query(Subscription).filter_by(user_id=u.id, status='active').first()
+        tier_name = None
+        if subscription:
+            tier = SubscriptionTier.query.get(subscription.tier_id)
+            tier_name = tier.name if tier else None
+
+        result.append({
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "phone_number": u.phone_number,
+            "device_id": getattr(u, 'device_id', None),
+            "subscription_tier": tier_name,
+            "activated_at": subscription.start_date.isoformat() if subscription else None,
+            "status": u.status,
+            "usage_mb": getattr(u, 'usage_mb', 0)
+        })
+    return jsonify(result), 200
+
+@app.route('/users/<int:user_id>/disconnect', methods=['POST'])
+def disconnect_user(user_id):
+    """Disconnect a user from the network (admin only)."""
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    user = User.query.get_or_404(user_id)
+    user.status = 'inactive'
+    db.session.commit()
+    return jsonify({"message": "User disconnected successfully"}), 200
+
+@app.route('/loyalty/all', methods=['GET'])
+def get_all_loyalty():
+    """Get all loyalty records (admin only)."""
+    loyalty_records = LoyaltyPoint.query.all()
+    result = []
+    for lp in loyalty_records:
+        user = User.query.get(lp.user_id)
+        result.append({
+            "user_id": lp.user_id,
+            "user_name": user.name if user else None,
+            "user_email": user.email if user else None,
+            "phone_number": user.phone_number if user else None,
+            "device_id": getattr(user, 'device_id', None) if user else None,
+            "points_earned": lp.points_earned
+        })
+    return jsonify(result), 200
+
+@app.route('/feedbacks/<int:feedback_id>/reply', methods=['PATCH'])
+def reply_to_feedback(feedback_id):
+    """Admin responds to feedback."""
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    feedback = Feedback.query.get_or_404(feedback_id)
+    # You might want to add an admin_response field to Feedback model
+    # For now, we'll just acknowledge the response
+    db.session.commit()
+    return jsonify({"message": "Response sent successfully"}), 200
+
+@app.route('/subscriptions', methods=['POST'])
+def create_subscription():
+    """User subscribes to a tier."""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    tier_id = data.get('tier_id')
+
+    tier = SubscriptionTier.query.get_or_404(tier_id)
+
+    # Calculate end date based on duration_days
+    from datetime import datetime, timedelta
+    start_date = datetime.utcnow()
+    end_date = start_date + timedelta(hours=tier.duration_days)  # Assuming duration_days is actually hours
+
+    subscription = Subscription(
+        user_id=user_id,
+        tier_id=tier_id,
+        start_date=start_date,
+        end_date=end_date,
+        status='active'
+    )
+    db.session.add(subscription)
+
+    # Award loyalty points (e.g., 10 points per subscription)
+    loyalty = LoyaltyPoint.query.filter_by(user_id=user_id).first()
+    if not loyalty:
+        loyalty = LoyaltyPoint(user_id=user_id, points_earned=10, points_redeemed=0, balance=10)
+        db.session.add(loyalty)
+    else:
+        loyalty.points_earned += 10
+        loyalty.balance += 10
+
+    db.session.commit()
+    return jsonify({"message": "Subscription created successfully"}), 201
+
+@app.route('/subscriptions', methods=['GET'])
+def get_subscriptions():
+    """Get user subscriptions."""
+    user_id = request.args.get('user_id')
+    subscriptions = Subscription.query.filter_by(user_id=user_id).all()
+
+    result = []
+    for s in subscriptions:
+        tier = SubscriptionTier.query.get(s.tier_id)
+        result.append({
+            "id": s.id,
+            "tier_name": tier.name if tier else None,
+            "status": s.status,
+            "start_date": s.start_date.isoformat() if s.start_date else None,
+            "end_date": s.end_date.isoformat() if s.end_date else None
+        })
+    return jsonify(result), 200
+
+@app.route('/loyalty/redeem', methods=['POST'])
+def redeem_loyalty_points():
+    """Redeem loyalty points."""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    points = data.get('points')
+
+    loyalty = LoyaltyPoint.query.filter_by(user_id=user_id).first()
+    if not loyalty or loyalty.balance < points:
+        return jsonify({"error": "Insufficient points"}), 400
+
+    loyalty.points_redeemed += points
+    loyalty.balance -= points
+    db.session.commit()
+    return jsonify({"message": "Points redeemed successfully"}), 200
+
+@app.route('/communications/send', methods=['POST'])
+def send_communication():
+    """Send mass communication (admin only)."""
+    data = request.get_json()
+    admin_id = data.get('admin_id')
+    admin = User.query.get(admin_id)
+
+    if not admin or admin.role != 'admin':
+        return jsonify({"error": "Admins only"}), 403
+
+    message = data.get('message')
+    channel = data.get('channel')  # email, sms, or both
+    recipients = data.get('recipients')  # all, active, or specific
+    specific_users = data.get('specificUsers', [])
+
+    # Determine which users to send to
+    if recipients == 'all':
+        users = User.query.all()
+    elif recipients == 'active':
+        users = User.query.filter_by(status='active').all()
+    elif recipients == 'specific':
+        users = User.query.filter(User.id.in_(specific_users)).all()
+    else:
+        return jsonify({"error": "Invalid recipients"}), 400
+
+    # Create notifications for each user
+    for user in users:
+        notification = Notification(
+            user_id=user.id,
+            message=message,
+            channel=channel,
+            type='promo',
+            status='sent'
+        )
+        db.session.add(notification)
+
+    db.session.commit()
+    return jsonify({"message": f"Message sent to {len(users)} users"}), 200
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
