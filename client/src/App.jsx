@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/Loginpage";
 import Register from "./pages/Register";
 import { HomePage } from "./pages/Home";
-import AdminDashboard from "./pages/AdminDashboard";
-import UserDashboard from "./pages/UserDashboard";
 import "./index.css";
 
 function App() {
