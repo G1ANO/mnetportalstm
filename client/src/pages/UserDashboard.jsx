@@ -2,14 +2,20 @@ import React from "react";
 import axios from "axios";
 import FeedbackForm from "../components/FeedbackForm";
 import ComplaintForm from "../components/ComplaintForm";
+import LoyaltyPanel from "../components/LoyaltyPanel";
+
 const UserDashboard = ({ user }) => {
   const [subscription, setSubscription] = useState(null);
   const [tiers, setTiers] = useState([]);
+  const [loyalty, setLoyalty] = useState(null);
+
 
 
   useEffect(() => {
     fetchSubscription();
     fetchTiers();
+    fetchLoyalty();
+
   }, []);
     const fetchSubscription = () =>{
     axios
@@ -27,6 +33,12 @@ const UserDashboard = ({ user }) => {
       .catch((err) => console.error(err));
   };
 
+  const fetchLoyalty = () => {
+    axios
+      .get(`http://localhost:5000/loyalty?user_id=${user.id}`)
+      .then((res) => setLoyalty(res.data))
+      .catch((err) => console.error(err));
+  };
 
   return (
     <div className="user-dashboard">
@@ -58,6 +70,7 @@ const UserDashboard = ({ user }) => {
 
       <section className="loyalty-section">
         <h3>Loyalty Points</h3>
+        <LoyaltyPanel loyalty={loyalty} />
       </section>
 
       <section className="notification-section">
