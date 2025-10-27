@@ -23,6 +23,14 @@ const AdminDashboard = ({ user }) => {
       .catch(err => console.error(err));
   };
 
+  const deleteTier = (tierId) => {
+    axios
+      .delete(`http://localhost:5000/tiers/${tierId}`, { data: { admin_id: user.id } })
+      .then(() => fetchTiers())
+      .catch(err => alert(err.response.data.error));
+  };
+
+
 
   return (
     <div className="admin-dashboard">
@@ -41,6 +49,9 @@ const AdminDashboard = ({ user }) => {
         <p>Duration: {tier.duration_days} days</p>
         <p>Speed: {tier.speed_limit} Mbps</p>
         <p>Data: {tier.data_limit} MB</p>
+        <div className="card-buttons">
+                <button onClick={() => deleteTier(tier.id)} className="delete-btn">Delete</button>
+              </div>
       </div>
     ))}
   </div>
