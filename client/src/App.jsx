@@ -10,6 +10,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('login');
 
+  console.log('App rendering - user:', user, 'currentPage:', currentPage);
+
   const handleLogin = (userData) => {
     setUser(userData);
     // Store user in localStorage for navbar
@@ -42,11 +44,14 @@ function App() {
 
   // Login/Register flow
   if (!user) {
+    console.log('Rendering login/register page');
     if (currentPage === 'register') {
       return <Register onGoToLogin={goToLogin} />;
     }
     return <LoginPage onLogin={handleLogin} onGoToRegister={goToRegister} />;
   }
+
+  console.log('Rendering main app with navbar');
 
   // Logged in - show navbar and content
   return (
@@ -102,7 +107,7 @@ function App() {
 
       {/* Page Content */}
       <div style={styles.content}>
-        {currentPage === 'home' && <HomePage user={user} onLogout={handleLogout} />}
+        {currentPage === 'home' && <HomePage user={{...user, id: 1}} onLogout={handleLogout} />}
         {currentPage === 'dashboard' && !user.isAdmin && <UserDashboard user={{...user, id: 1}} />}
         {currentPage === 'dashboard' && user.isAdmin && <AdminDashboard user={{...user, id: 1}} />}
         {currentPage === 'admin' && user.isAdmin && <AdminDashboard user={{...user, id: 1}} />}

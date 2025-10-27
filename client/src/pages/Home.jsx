@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../index.css';
-import { FeedbackForm } from '../components/FeedbackForm';
-import { ComplaintForm } from '../components/ComplaintForm';
+import FeedbackForm from '../components/FeedbackForm';
+import ComplaintForm from '../components/ComplaintForm';
 
 export const HomePage = ({ user }) => {
   const [activeTab, setActiveTab] = useState('plans');
@@ -76,6 +76,307 @@ export const HomePage = ({ user }) => {
         alert('Failed to redeem points');
       }
     }
+  };
+
+  // Styles object
+  const styles = {
+    pageContainer: {
+      minHeight: '100vh',
+      paddingTop: '2rem',
+      paddingBottom: '2rem',
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '3rem',
+    },
+    iconContainer: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '80px',
+      height: '80px',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      marginBottom: '1.5rem',
+    },
+    icon: {
+      width: '40px',
+      height: '40px',
+      color: '#fff',
+    },
+    heading: {
+      fontSize: '2.5rem',
+      fontWeight: '700',
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      marginBottom: '0.5rem',
+    },
+    subHeading: {
+      fontSize: '1.125rem',
+      color: '#94a3b8',
+    },
+    tabContainer: {
+      display: 'flex',
+      gap: '1rem',
+      marginBottom: '2rem',
+      borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
+      flexWrap: 'wrap',
+    },
+    tab: {
+      padding: '1rem 1.5rem',
+      background: 'transparent',
+      border: 'none',
+      color: '#94a3b8',
+      fontSize: '1rem',
+      fontWeight: '500',
+      cursor: 'pointer',
+      borderBottom: '2px solid transparent',
+      marginBottom: '-2px',
+      transition: 'all 0.3s ease',
+    },
+    tabActive: {
+      color: '#10b981',
+      borderBottomColor: '#10b981',
+    },
+    tabContent: {
+      minHeight: '400px',
+    },
+    sectionHeader: {
+      marginBottom: '2rem',
+    },
+    sectionTitle: {
+      fontSize: '1.875rem',
+      fontWeight: '700',
+      color: '#f1f5f9',
+      marginBottom: '0.5rem',
+    },
+    sectionDescription: {
+      fontSize: '1rem',
+      color: '#94a3b8',
+    },
+    loading: {
+      textAlign: 'center',
+      padding: '3rem',
+      color: '#94a3b8',
+      fontSize: '1.125rem',
+    },
+    plansGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+      gap: '1.5rem',
+    },
+    planCard: {
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    },
+    planHeader: {
+      marginBottom: '1.5rem',
+      paddingBottom: '1rem',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    planName: {
+      fontSize: '1.5rem',
+      fontWeight: '600',
+      color: '#f1f5f9',
+      marginBottom: '1rem',
+    },
+    planPrice: {
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '0.25rem',
+    },
+    currency: {
+      fontSize: '1rem',
+      color: '#94a3b8',
+    },
+    amount: {
+      fontSize: '2.5rem',
+      fontWeight: '700',
+      color: '#10b981',
+    },
+    planBody: {
+      padding: '1.5rem',
+    },
+    planFeatures: {
+      marginTop: '1rem',
+    },
+    planFeature: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      padding: '0.75rem 0',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    feature: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      padding: '0.75rem 0',
+      color: '#cbd5e1',
+    },
+    featureIcon: {
+      width: '20px',
+      height: '20px',
+      color: '#10b981',
+    },
+    featureText: {
+      color: '#cbd5e1',
+      fontSize: '0.95rem',
+    },
+    period: {
+      fontSize: '1rem',
+      fontWeight: '400',
+      color: 'rgba(255, 255, 255, 0.8)',
+    },
+    whatsappBtn: {
+      width: '100%',
+      marginTop: '1.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem',
+      background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+      padding: '0.875rem 1.5rem',
+      fontSize: '1rem',
+      fontWeight: '600',
+    },
+    whatsappIcon: {
+      width: '20px',
+      height: '20px',
+    },
+    connectionDetails: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    },
+    subscriptionCard: {
+      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%)',
+      border: '2px solid #10b981',
+    },
+    statusBadge: {
+      display: 'inline-block',
+      padding: '0.5rem 1rem',
+      borderRadius: '9999px',
+      fontSize: '0.875rem',
+      fontWeight: '600',
+      marginBottom: '1rem',
+    },
+    statusActive: {
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: '#fff',
+    },
+    statusInactive: {
+      background: 'rgba(239, 68, 68, 0.2)',
+      color: '#ef4444',
+    },
+    detailsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '1.5rem',
+      marginTop: '1.5rem',
+    },
+    detailItem: {
+      padding: '1rem',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '8px',
+    },
+    detailRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '0.5rem',
+    },
+    detailLabel: {
+      fontSize: '0.875rem',
+      color: '#94a3b8',
+      marginBottom: '0.5rem',
+    },
+    detailValue: {
+      fontSize: '1.125rem',
+      fontWeight: '600',
+      color: '#f1f5f9',
+    },
+    changeBtn: {
+      marginTop: '1.5rem',
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    },
+    loyaltyContainer: {
+      textAlign: 'center',
+      padding: '2rem',
+    },
+    pointsCircle: {
+      width: '200px',
+      height: '200px',
+      margin: '0 auto 2rem',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 10px 40px rgba(16, 185, 129, 0.3)',
+    },
+    pointsNumber: {
+      fontSize: '3rem',
+      fontWeight: '800',
+      color: '#fff',
+    },
+    pointsLabel: {
+      fontSize: '0.875rem',
+      color: 'rgba(255, 255, 255, 0.9)',
+      marginTop: '0.5rem',
+    },
+    pointsBreakdown: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+      gap: '1rem',
+      marginBottom: '2rem',
+    },
+    breakdownItem: {
+      padding: '1rem',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '8px',
+    },
+    breakdownLabel: {
+      display: 'block',
+      fontSize: '0.875rem',
+      color: '#94a3b8',
+      marginBottom: '0.5rem',
+    },
+    breakdownValue: {
+      display: 'block',
+      fontSize: '1.5rem',
+      fontWeight: '700',
+      color: '#10b981',
+    },
+    redeemBtn: {
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      padding: '0.875rem 2rem',
+      fontSize: '1rem',
+      fontWeight: '600',
+      border: 'none',
+      borderRadius: '8px',
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+    },
+    feedbackGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+      gap: '1.5rem',
+    },
+    footer: {
+      marginTop: '4rem',
+      paddingTop: '2rem',
+      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+      textAlign: 'center',
+      color: '#94a3b8',
+      fontSize: '0.875rem',
+    },
   };
 
   return (
@@ -335,239 +636,4 @@ export const HomePage = ({ user }) => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  pageContainer: {
-    minHeight: '100vh',
-    paddingTop: '2rem',
-    paddingBottom: '2rem',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '3rem',
-  },
-  iconContainer: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    marginBottom: '1.5rem',
-    boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
-  },
-  icon: {
-    width: '50px',
-    height: '50px',
-    color: 'white',
-  },
-  heading: {
-    fontSize: '2.5rem',
-    fontWeight: '700',
-    color: '#f1f5f9',
-    marginBottom: '0.5rem',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  subHeading: {
-    fontSize: '1.25rem',
-    color: '#94a3b8',
-  },
-  tabContainer: {
-    display: 'flex',
-    gap: '0.5rem',
-    marginBottom: '2rem',
-    borderBottom: '2px solid #334155',
-    flexWrap: 'wrap',
-  },
-  tab: {
-    padding: '0.75rem 1.5rem',
-    background: 'transparent',
-    border: 'none',
-    color: '#94a3b8',
-    fontSize: '1rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    borderBottom: '2px solid transparent',
-    marginBottom: '-2px',
-    transition: 'all 0.2s ease',
-  },
-  tabActive: {
-    color: '#10b981',
-    borderBottomColor: '#10b981',
-  },
-  tabContent: {
-    minHeight: '400px',
-  },
-  sectionHeader: {
-    marginBottom: '2rem',
-  },
-  sectionTitle: {
-    fontSize: '1.75rem',
-    fontWeight: '600',
-    color: '#f1f5f9',
-    marginBottom: '0.5rem',
-  },
-  sectionDescription: {
-    color: '#94a3b8',
-    fontSize: '1rem',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '3rem',
-    color: '#94a3b8',
-    fontSize: '1.125rem',
-  },
-  plansGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '1.5rem',
-  },
-  planCard: {
-    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    cursor: 'pointer',
-  },
-  planHeader: {
-    marginBottom: '1.5rem',
-    paddingBottom: '1rem',
-    borderBottom: '1px solid #334155',
-  },
-  planName: {
-    fontSize: '1.5rem',
-    fontWeight: '600',
-    color: '#f1f5f9',
-    marginBottom: '1rem',
-  },
-  planPrice: {
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: '0.25rem',
-  },
-  currency: {
-    fontSize: '1rem',
-    color: '#94a3b8',
-  },
-  amount: {
-    fontSize: '2.5rem',
-    fontWeight: '700',
-    color: '#10b981',
-  },
-  period: {
-    fontSize: '1rem',
-    color: '#94a3b8',
-  },
-  planFeatures: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-    marginBottom: '1.5rem',
-  },
-  feature: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    color: '#cbd5e1',
-  },
-  featureIcon: {
-    fontSize: '1.25rem',
-  },
-  whatsappBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem',
-    background: '#25D366',
-    borderColor: '#25D366',
-  },
-  whatsappIcon: {
-    width: '20px',
-    height: '20px',
-  },
-  connectionDetails: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  detailRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '1rem',
-    background: 'rgba(99, 102, 241, 0.05)',
-    borderRadius: '0.5rem',
-  },
-  detailLabel: {
-    color: '#94a3b8',
-    fontSize: '1rem',
-    fontWeight: '500',
-  },
-  detailValue: {
-    color: '#f1f5f9',
-    fontSize: '1rem',
-    fontWeight: '600',
-  },
-  loyaltyContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '2rem',
-  },
-  pointsCircle: {
-    width: '200px',
-    height: '200px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '2rem',
-    boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
-  },
-  pointsNumber: {
-    fontSize: '3rem',
-    fontWeight: '700',
-    color: 'white',
-  },
-  pointsLabel: {
-    fontSize: '0.875rem',
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: '0.5rem',
-  },
-  pointsBreakdown: {
-    width: '100%',
-    maxWidth: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-  },
-  breakdownItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.75rem 1rem',
-    background: 'rgba(99, 102, 241, 0.05)',
-    borderRadius: '0.5rem',
-  },
-  breakdownLabel: {
-    color: '#94a3b8',
-  },
-  breakdownValue: {
-    color: '#10b981',
-    fontWeight: '600',
-  },
-  feedbackGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '1.5rem',
-  },
-  footer: {
-    marginTop: '3rem',
-    paddingTop: '2rem',
-    borderTop: '1px solid #334155',
-    textAlign: 'center',
-    color: '#64748b',
-  },
 };
