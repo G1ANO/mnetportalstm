@@ -1,0 +1,65 @@
+.user-dashboard, .admin-dashboard {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.dashboard-title {
+  text-align: center;
+  color: #2ecc71;
+  margin-bottom: 2rem;
+}
+
+/* Subscription Card */
+.subscription-card {
+  background: #ecf0f1;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+/* Sections */
+.feedback-section,
+.complaint-section,
+.loyalty-section,
+.notification-section,
+.tier-section,
+.complaints-section {
+  margin-bottom: 2rem;
+}
+
+/* Admin Dashboard - Tiers */
+.tier-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.tier-card {
+  background: #ecf0f1;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tier-card h4 {
+  margin-top: 0;
+  color: #27ae60;
+}
+
+.card-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  padding: 0.3rem 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
