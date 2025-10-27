@@ -29,6 +29,15 @@ const AdminDashboard = ({ user }) => {
       .then(() => fetchTiers())
       .catch(err => alert(err.response.data.error));
   };
+  const replyComplaint = (id) => {
+    const admin_response = prompt('Enter your response:');
+    if (!admin_response) return;
+
+    axios
+      .patch(`http://localhost:5000/complaints/${id}/reply`, { admin_response, admin_id: user.id })
+      .then(() => fetchComplaints())
+      .catch(err => alert(err.response.data.error));
+  };
 
 
 
@@ -82,7 +91,7 @@ const AdminDashboard = ({ user }) => {
             </td>
             <td>{c.admin_response || '-'}</td>
             <td>
-              <button className="reply-btn">Reply</button>
+             <button className="reply-btn" onClick={() => replyComplaint(c.id)}>Reply</button>
             </td>
           </tr>
         ))}
