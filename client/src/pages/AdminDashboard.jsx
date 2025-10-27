@@ -18,8 +18,6 @@ const AdminDashboard = ({ user }) => {
     name: '',
     price: '',
     duration_days: '',
-    speed_limit: '',
-    data_limit: '',
     description: '',
     tier_type: 'hotspot'
   });
@@ -106,12 +104,14 @@ const AdminDashboard = ({ user }) => {
     try {
       await axios.post('http://localhost:5000/tiers', {
         ...tierForm,
+        speed_limit: 0,
+        data_limit: 0,
         tier_type: 'hotspot',
         admin_id: user.id
       });
       alert('Hotspot tier created successfully!');
       setShowTierForm(false);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
+      setTierForm({ name: '', price: '', duration_days: '', description: '', tier_type: 'hotspot' });
       fetchTiers();
     } catch (err) {
       alert('Error creating tier: ' + err.message);
@@ -123,12 +123,14 @@ const AdminDashboard = ({ user }) => {
     try {
       await axios.patch(`http://localhost:5000/tiers/${editingTier.id}`, {
         ...tierForm,
+        speed_limit: 0,
+        data_limit: 0,
         tier_type: 'hotspot',
         admin_id: user.id
       });
       alert('Hotspot tier updated successfully!');
       setEditingTier(null);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
+      setTierForm({ name: '', price: '', duration_days: '', description: '', tier_type: 'hotspot' });
       fetchTiers();
     } catch (err) {
       alert('Error updating tier: ' + err.message);
@@ -153,8 +155,6 @@ const AdminDashboard = ({ user }) => {
       name: tier.name,
       price: tier.price,
       duration_days: tier.duration_days,
-      speed_limit: tier.speed_limit,
-      data_limit: tier.data_limit,
       description: tier.description,
       tier_type: 'hotspot'
     });
@@ -278,7 +278,7 @@ const AdminDashboard = ({ user }) => {
                 onClick={() => {
                   setShowTierForm(!showTierForm);
                   setEditingTier(null);
-                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'hotspot' });
+                  setTierForm({ name: '', price: '', duration_days: '', description: '', tier_type: 'hotspot' });
                 }}
                 className="btn-primary"
               >
@@ -324,26 +324,6 @@ const AdminDashboard = ({ user }) => {
                         required
                       />
                     </div>
-                    <div>
-                      <label className="form-label">Speed Limit (Mbps)</label>
-                      <input
-                        type="number"
-                        className="form-input"
-                        value={tierForm.speed_limit}
-                        onChange={(e) => setTierForm({...tierForm, speed_limit: e.target.value})}
-                        placeholder="e.g., 50"
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">Data Limit (MB)</label>
-                      <input
-                        type="number"
-                        className="form-input"
-                        value={tierForm.data_limit}
-                        onChange={(e) => setTierForm({...tierForm, data_limit: e.target.value})}
-                        placeholder="e.g., 1000"
-                      />
-                    </div>
                   </div>
                   <div>
                     <label className="form-label">Description</label>
@@ -382,23 +362,19 @@ const AdminDashboard = ({ user }) => {
                     <th>Name</th>
                     <th>Price</th>
                     <th>Duration</th>
-                    <th>Speed</th>
-                    <th>Data Limit</th>
                     <th>Description</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tiers.length === 0 ? (
-                    <tr><td colSpan="7" style={{textAlign: 'center'}}>No tiers available</td></tr>
+                    <tr><td colSpan="5" style={{textAlign: 'center'}}>No tiers available</td></tr>
                   ) : (
                     tiers.map((tier) => (
                       <tr key={tier.id}>
                         <td>{tier.name}</td>
                         <td>KSH {tier.price}</td>
                         <td>{tier.duration_days} hrs</td>
-                        <td>{tier.speed_limit || 'N/A'} Mbps</td>
-                        <td>{tier.data_limit || 'Unlimited'} MB</td>
                         <td>{tier.description || 'N/A'}</td>
                         <td>
                           <button onClick={() => startEditTier(tier)} className="btn-sm btn-secondary" style={{marginRight: '0.5rem'}}>

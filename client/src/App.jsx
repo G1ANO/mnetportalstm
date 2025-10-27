@@ -47,7 +47,7 @@ function App() {
   if (!user) {
     console.log('Rendering login/register page');
     if (currentPage === 'register') {
-      return <Register onGoToLogin={goToLogin} />;
+      return <Register onGoToLogin={goToLogin} onRegisterSuccess={handleLogin} />;
     }
     return <LoginPage onLogin={handleLogin} onGoToRegister={goToRegister} />;
   }

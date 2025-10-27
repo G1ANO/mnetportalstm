@@ -1,26 +1,46 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import '../index.css';
 
 export const LoginPage = ({ onLogin, onGoToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email === 'admin@mnet.com' && password === 'admin123') {
-        onLogin({ username: 'Admin', email, isAdmin: true });
-      } else if (email && password) {
-        onLogin({ username: 'User', email, isAdmin: false });
-      } else {
-        alert('Please enter valid credentials');
+    try {
+      // Call the real login API
+      const response = await axios.post('http://localhost:5000/login', {
+        email,
+        password
+      });
+
+      if (response.status === 200) {
+        const userData = response.data.user;
+
+        // Extract first name from full name
+        const firstName = userData.name ? userData.name.split(' ')[0] : 'User';
+
+        onLogin({
+          username: firstName,
+          email: userData.email,
+          isAdmin: userData.role === 'admin',
+          id: userData.id
+        });
       }
+    } catch (err) {
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.error || 'Login failed. Please check your credentials.';
+      setError(errorMsg);
+      alert(errorMsg);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -54,6 +74,13 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
             <br />
             Admin: admin@mnet.com / admin123
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="alert alert-danger" style={styles.errorAlert}>
+              {error}
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleLogin}>
@@ -165,6 +192,10 @@ const styles = {
     fontSize: '1rem',
   },
   demoAlert: {
+    marginBottom: '1.5rem',
+    fontSize: '0.875rem',
+  },
+  errorAlert: {
     marginBottom: '1.5rem',
     fontSize: '0.875rem',
   },

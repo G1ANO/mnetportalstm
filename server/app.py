@@ -50,7 +50,12 @@ def login():
 
     return jsonify({
         "message": "Login successful",
-        "user": {"id": user.id, "email": user.email, "role": user.role}
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role
+        }
     }), 200
 
 @app.route('/tiers', methods=['GET'])
@@ -269,6 +274,22 @@ def get_users():
             "usage_mb": getattr(u, 'usage_mb', 0)
         })
     return jsonify(result), 200
+
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    """Get a single user by ID."""
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone_number or 'N/A',
+        "is_active": user.status == 'active',
+        "created_at": user.created_at.isoformat() if user.created_at else None
+    }), 200
 
 @app.route('/users/<int:user_id>/disconnect', methods=['POST'])
 def disconnect_user(user_id):

@@ -459,15 +459,9 @@ export const HomePage = ({ user }) => {
                       </div>
                       <div style={styles.planFeatures}>
                         <div style={styles.feature}>
-                          <span style={styles.featureIcon}>⚡</span>
                           <span>Speed: {tier.speed_limit} Mbps</span>
                         </div>
                         <div style={styles.feature}>
-                          <span style={styles.featureIcon}>Data:</span>
-                          <span>Data: {tier.data_limit >= 1000 ? `${tier.data_limit/1000} GB` : `${tier.data_limit} MB`}</span>
-                        </div>
-                        <div style={styles.feature}>
-                          <span style={styles.featureIcon}>📝</span>
                           <span>{tier.description}</span>
                         </div>
                       </div>

@@ -147,8 +147,6 @@ const UserDashboard = ({ user }) => {
                       </div>
                     </div>
                     <div style={styles.planDetails}>
-                      <p><strong>Speed:</strong> {tier.speed_limit || 'Unlimited'} Mbps</p>
-                      <p><strong>Data:</strong> {tier.data_limit || 'Unlimited'} MB</p>
                       {tier.description && <p style={styles.description}>{tier.description}</p>}
                     </div>
                     <button

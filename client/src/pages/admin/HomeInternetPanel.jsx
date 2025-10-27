@@ -69,7 +69,24 @@ const HomeInternetPanel = ({ user }) => {
   const fetchLoyaltyRecords = async () => {
     try {
       const res = await axios.get('http://localhost:5000/loyalty/all');
-      setLoyaltyRecords(res.data);
+      // Fetch user details for each loyalty record
+      const recordsWithUsers = await Promise.all(
+        res.data.map(async (record) => {
+          try {
+            const userRes = await axios.get(`http://localhost:5000/users/${record.user_id}`);
+            return {
+              ...record,
+              user: userRes.data
+            };
+          } catch (err) {
+            return {
+              ...record,
+              user: { name: 'Unknown', email: 'N/A', phone: 'N/A' }
+            };
+          }
+        })
+      );
+      setLoyaltyRecords(recordsWithUsers);
     } catch(err) {
       console.error("Error fetching loyalty records:", err);
     }
@@ -324,53 +341,54 @@ const HomeInternetPanel = ({ user }) => {
               </div>
             )}
 
-            {/* Tiers Grid */}
-            <div style={styles.tiersGrid}>
+            {/* Tiers Table */}
+            <div className="card" style={{marginTop: '1.5rem'}}>
               {tiers.length === 0 ? (
                 <p style={styles.emptyState}>No home internet plans yet. Create one to get started!</p>
               ) : (
-                tiers.map(tier => (
-                  <div key={tier.id} className="card" style={styles.tierCard}>
-                    <div style={styles.tierHeader}>
-                      <h3 style={styles.tierName}>{tier.name}</h3>
-                      <span style={styles.tierBadge}>Home Internet</span>
-                    </div>
-                    <div style={styles.tierPrice}>
-                      <span style={styles.currency}>KSH</span>
-                      <span style={styles.amount}>{tier.price}</span>
-                      <span style={styles.period}>/{tier.duration_days} days</span>
-                    </div>
-                    <p style={styles.tierDescription}>{tier.description}</p>
-                    <div style={styles.tierDetails}>
-                      <div style={styles.detailItem}>
-                        <span style={styles.detailLabel}>Speed:</span>
-                        <span style={styles.detailValue}>{tier.speed_limit} Mbps</span>
-                      </div>
-                      <div style={styles.detailItem}>
-                        <span style={styles.detailLabel}>Data:</span>
-                        <span style={styles.detailValue}>
-                          {tier.data_limit >= 1000 ? `${tier.data_limit/1000} GB` : `${tier.data_limit} MB`}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={styles.tierActions}>
-                      <button
-                        onClick={() => startEditTier(tier)}
-                        className="btn-secondary"
-                        style={{flex: 1}}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteTier(tier.id)}
-                        className="btn-danger"
-                        style={{flex: 1}}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Plan Name</th>
+                      <th>Price (KSH)</th>
+                      <th>Duration (Days)</th>
+                      <th>Speed (Mbps)</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tiers.map(tier => (
+                      <tr key={tier.id}>
+                        <td>{tier.id}</td>
+                        <td><strong>{tier.name}</strong></td>
+                        <td>{tier.price}</td>
+                        <td>{tier.duration_days}</td>
+                        <td><span style={{color: '#10b981', fontWeight: '600'}}>{tier.speed_limit} Mbps</span></td>
+                        <td>{tier.description || '-'}</td>
+                        <td>
+                          <div style={{display: 'flex', gap: '0.5rem'}}>
+                            <button
+                              onClick={() => startEditTier(tier)}
+                              className="btn-secondary"
+                              style={{padding: '0.25rem 0.75rem', fontSize: '0.875rem'}}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteTier(tier.id)}
+                              className="btn-danger"
+                              style={{padding: '0.25rem 0.75rem', fontSize: '0.875rem'}}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
@@ -420,18 +438,24 @@ const HomeInternetPanel = ({ user }) => {
                 <thead>
                   <tr>
                     <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
                     <th>Points Earned</th>
                     <th>Points Redeemed</th>
-                    <th>Balance</th>
+                    <th>Balance Points</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loyaltyRecords.map(record => (
                     <tr key={record.id}>
                       <td>{record.user_id}</td>
+                      <td>{record.user?.name || 'N/A'}</td>
+                      <td>{record.user?.email || 'N/A'}</td>
+                      <td>{record.user?.phone || 'N/A'}</td>
                       <td>{record.points_earned}</td>
                       <td>{record.points_redeemed}</td>
-                      <td><strong>{record.balance}</strong></td>
+                      <td><strong style={{color: '#10b981'}}>{record.balance}</strong></td>
                     </tr>
                   ))}
                 </tbody>

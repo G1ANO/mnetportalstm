@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import '../index.css';
 
-export default function Register({ onGoToLogin }) {
+export default function Register({ onGoToLogin, onRegisterSuccess }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -10,24 +10,50 @@ export default function Register({ onGoToLogin }) {
     phone_number: ""
   });
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      alert("Registration successful! Please login.");
-      setIsLoading(false);
-      if (onGoToLogin) {
-        onGoToLogin();
-      } else {
-        navigate("/login");
+    try {
+      // Register the user
+      const registerRes = await axios.post('http://localhost:5000/register', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone_number: form.phone_number
+      });
+
+      if (registerRes.status === 201) {
+        // Registration successful - now log them in automatically
+        alert("Registration successful! Logging you in...");
+
+        // Extract first name from full name
+        const firstName = form.name ? form.name.split(' ')[0] : 'User';
+
+        // Auto-login the newly registered user
+        if (onRegisterSuccess) {
+          onRegisterSuccess({
+            username: firstName,
+            email: form.email,
+            isAdmin: false
+          });
+        } else if (onGoToLogin) {
+          onGoToLogin();
+        }
       }
-    }, 800);
+    } catch (err) {
+      console.error("Registration error:", err);
+      const errorMsg = err.response?.data?.error || "Registration failed. Please try again.";
+      setError(errorMsg);
+      alert(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,6 +80,13 @@ export default function Register({ onGoToLogin }) {
             <h2 style={styles.title}>Create Account</h2>
             <p style={styles.subtitle}>Join Mnet WiFi Portal today</p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="alert alert-danger" style={styles.errorAlert}>
+              {error}
+            </div>
+          )}
 
           {/* Registration Form */}
           <form onSubmit={handleSubmit}>
@@ -131,7 +164,7 @@ export default function Register({ onGoToLogin }) {
             <p style={styles.footerText}>
               Already have an account?{' '}
               <button
-                onClick={onGoToLogin || (() => navigate('/login'))}
+                onClick={onGoToLogin}
                 className="btn-link"
                 style={styles.loginLink}
               >
@@ -198,6 +231,10 @@ const styles = {
   },
   formGroup: {
     marginBottom: '1.25rem',
+  },
+  errorAlert: {
+    marginBottom: '1.5rem',
+    fontSize: '0.875rem',
   },
   submitButton: {
     width: '100%',
