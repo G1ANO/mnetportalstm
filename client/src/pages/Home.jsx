@@ -1,16 +1,81 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../index.css';
+import { FeedbackForm } from '../components/FeedbackForm';
+import { ComplaintForm } from '../components/ComplaintForm';
 
 export const HomePage = ({ user }) => {
-  const connectionDetails = {
-    networkName: "Mnet Hotspot",
-    speed: "50 Mbps",
-    dataUsed: "1.2 GB",
-    sessionTime: "2 hours 14 min",
+  const [activeTab, setActiveTab] = useState('plans');
+  const [homeTiers, setHomeTiers] = useState([]);
+  const [subscription, setSubscription] = useState(null);
+  const [loyalty, setLoyalty] = useState({ points_earned: 0, balance: 0, points_redeemed: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Fetch home internet tiers (monthly plans)
+      const tiersRes = await axios.get('http://localhost:5000/tiers');
+      // Filter for home internet plans (monthly plans with higher speeds)
+      const homeInternetPlans = tiersRes.data.filter(tier =>
+        tier.duration_days >= 720 || tier.name.toLowerCase().includes('home')
+      );
+      setHomeTiers(homeInternetPlans);
+
+      // Fetch user subscription
+      const subRes = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}`);
+      if (subRes.data && subRes.data.length > 0) {
+        setSubscription(subRes.data[0]);
+      }
+
+      // Fetch loyalty points
+      const loyaltyRes = await axios.get(`http://localhost:5000/loyalty?user_id=${user.id}`);
+      if (loyaltyRes.data) {
+        setLoyalty(loyaltyRes.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loyalty = {
-    points: user.isAdmin ? "∞ (Admin Access)" : "120",
-    nextReward: user.isAdmin ? "N/A" : "Free 1GB after 200 points",
+  const handleWhatsAppRequest = () => {
+    const message = encodeURIComponent(
+      `Hello! I would like to request a Home Internet connection.\n\nName: ${user.username}\nEmail: ${user.email || user.userEmail}`
+    );
+    const whatsappUrl = `https://wa.me/254700000000?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleChangeSubscription = () => {
+    setActiveTab('plans');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRedeemPoints = async () => {
+    if (loyalty.balance === 0) {
+      alert('You have no points to redeem!');
+      return;
+    }
+
+    if (window.confirm(`Redeem ${loyalty.balance} points?`)) {
+      try {
+        await axios.post('http://localhost:5000/loyalty/redeem', {
+          user_id: user.id,
+          points: loyalty.balance
+        });
+        alert('Points redeemed successfully!');
+        fetchData();
+      } catch (error) {
+        console.error('Error redeeming points:', error);
+        alert('Failed to redeem points');
+      }
+    }
   };
 
   return (
@@ -29,116 +94,243 @@ export const HomePage = ({ user }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
               />
             </svg>
           </div>
-          <h1 style={styles.heading}>Welcome to {connectionDetails.networkName}</h1>
-          <p style={styles.subHeading}>Hello, {user.username}!</p>
+          <h1 style={styles.heading}>🏠 Home Internet</h1>
+          <p style={styles.subHeading}>Reliable high-speed internet for your home</p>
         </div>
 
-        {/* ADMIN DASHBOARD */}
-        {user.isAdmin && (
-          <div className="card" style={styles.adminPanel}>
-            <div className="card-header">
-              <h3 className="card-title">Admin Dashboard</h3>
-              <p className="card-description">Manage users, subscriptions, and feedback</p>
-            </div>
-            <div style={styles.adminGrid}>
-              <div style={styles.adminCard}>
-                <div style={styles.adminCardIcon}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <h4>User Management</h4>
-                <p>View and manage all users</p>
-              </div>
-              <div style={styles.adminCard}>
-                <div style={styles.adminCardIcon}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <h4>Subscription Tiers</h4>
-                <p>Create or update plans</p>
-              </div>
-              <div style={styles.adminCard}>
-                <div style={styles.adminCardIcon}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                </div>
-                <h4>User Feedback</h4>
-                <p>Review ratings and comments</p>
-              </div>
-              <div style={styles.adminCard}>
-                <div style={styles.adminCardIcon}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <h4>Policy Enforcement</h4>
-                <p>Disconnect violating users</p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Tab Navigation */}
+        <div style={styles.tabContainer}>
+          <button
+            onClick={() => setActiveTab('plans')}
+            style={{...styles.tab, ...(activeTab === 'plans' ? styles.tabActive : {})}}
+          >
+            📶 Home Internet Plans
+          </button>
+          <button
+            onClick={() => setActiveTab('myplan')}
+            style={{...styles.tab, ...(activeTab === 'myplan' ? styles.tabActive : {})}}
+          >
+            📋 My Connection
+          </button>
+          <button
+            onClick={() => setActiveTab('loyalty')}
+            style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.tabActive : {})}}
+          >
+            🎁 Loyalty Program
+          </button>
+          <button
+            onClick={() => setActiveTab('feedback')}
+            style={{...styles.tab, ...(activeTab === 'feedback' ? styles.tabActive : {})}}
+          >
+            💬 Feedback & Complaints
+          </button>
+        </div>
 
-        {/* USER SECTION */}
-        {!user.isAdmin && (
-          <div className="grid grid-cols-2" style={styles.userSection}>
-            <div className="card">
-              <div className="card-header">
-                <div style={styles.cardIconSmall}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="card-title">Connection Info</h3>
+        {/* Tab Content */}
+        <div style={styles.tabContent}>
+          {/* HOME INTERNET PLANS TAB */}
+          {activeTab === 'plans' && (
+            <div>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.sectionTitle}>Available Home Internet Plans</h2>
+                <p style={styles.sectionDescription}>Choose the perfect plan for your home</p>
               </div>
-              <div style={styles.statsGrid}>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Speed</span>
-                  <span style={styles.statValue}>{connectionDetails.speed}</span>
-                </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Data Used</span>
-                  <span style={styles.statValue}>{connectionDetails.dataUsed}</span>
-                </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Session Time</span>
-                  <span style={styles.statValue}>{connectionDetails.sessionTime}</span>
-                </div>
-              </div>
-            </div>
 
-            <div className="card">
-              <div className="card-header">
-                <div style={styles.cardIconSmall}>
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+              {loading ? (
+                <div style={styles.loading}>Loading plans...</div>
+              ) : homeTiers.length === 0 ? (
+                <div className="card">
+                  <p style={{textAlign: 'center', color: '#94a3b8'}}>
+                    No home internet plans available yet. Check back soon!
+                  </p>
                 </div>
-                <h3 className="card-title">Loyalty Program</h3>
+              ) : (
+                <div style={styles.plansGrid}>
+                  {homeTiers.map((tier) => (
+                    <div key={tier.id} className="card" style={styles.planCard}>
+                      <div style={styles.planHeader}>
+                        <h3 style={styles.planName}>{tier.name}</h3>
+                        <div style={styles.planPrice}>
+                          <span style={styles.currency}>KSH</span>
+                          <span style={styles.amount}>{tier.price}</span>
+                          <span style={styles.period}>/month</span>
+                        </div>
+                      </div>
+                      <div style={styles.planFeatures}>
+                        <div style={styles.feature}>
+                          <span style={styles.featureIcon}>⚡</span>
+                          <span>Speed: {tier.speed_limit} Mbps</span>
+                        </div>
+                        <div style={styles.feature}>
+                          <span style={styles.featureIcon}>📊</span>
+                          <span>Data: {tier.data_limit >= 1000 ? `${tier.data_limit/1000} GB` : `${tier.data_limit} MB`}</span>
+                        </div>
+                        <div style={styles.feature}>
+                          <span style={styles.featureIcon}>📝</span>
+                          <span>{tier.description}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleWhatsAppRequest}
+                        className="btn-primary"
+                        style={styles.whatsappBtn}
+                      >
+                        <svg style={styles.whatsappIcon} fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        Request via WhatsApp
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* MY CONNECTION TAB */}
+          {activeTab === 'myplan' && (
+            <div>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.sectionTitle}>My Home Internet Connection</h2>
+                <p style={styles.sectionDescription}>View your current connection details</p>
               </div>
-              <div style={styles.statsGrid}>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Your Points</span>
-                  <span style={styles.statValue}>{loyalty.points}</span>
+
+              {subscription ? (
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">📡 Active Connection</h3>
+                  </div>
+                  <div style={styles.connectionDetails}>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Plan Type:</span>
+                      <span style={styles.detailValue}>{subscription.tier_name || 'N/A'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Status:</span>
+                      <span className={`badge ${subscription.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                        {subscription.status}
+                      </span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Time In:</span>
+                      <span style={styles.detailValue}>
+                        {subscription.start_date ? new Date(subscription.start_date).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Time Expected Out:</span>
+                      <span style={styles.detailValue}>
+                        {subscription.end_date ? new Date(subscription.end_date).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleChangeSubscription}
+                    className="btn-secondary"
+                    style={{marginTop: '1.5rem', width: '100%'}}
+                  >
+                    🔄 Change Subscription
+                  </button>
                 </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Next Reward</span>
-                  <span style={styles.statValue}>{loyalty.nextReward}</span>
+              ) : (
+                <div className="card">
+                  <div style={{textAlign: 'center', padding: '2rem'}}>
+                    <p style={{color: '#94a3b8', marginBottom: '1.5rem'}}>
+                      You don't have an active home internet connection yet.
+                    </p>
+                    <button
+                      onClick={handleWhatsAppRequest}
+                      className="btn-primary"
+                      style={styles.whatsappBtn}
+                    >
+                      <svg style={styles.whatsappIcon} fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                      </svg>
+                      Request Connection via WhatsApp
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* LOYALTY PROGRAM TAB */}
+          {activeTab === 'loyalty' && (
+            <div>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.sectionTitle}>Loyalty Program</h2>
+                <p style={styles.sectionDescription}>Earn points and get rewards</p>
+              </div>
+
+              <div className="card">
+                <div style={styles.loyaltyContainer}>
+                  <div style={styles.pointsCircle}>
+                    <span style={styles.pointsNumber}>{loyalty.balance || 0}</span>
+                    <span style={styles.pointsLabel}>Available Points</span>
+                  </div>
+
+                  <div style={styles.pointsBreakdown}>
+                    <div style={styles.breakdownItem}>
+                      <span style={styles.breakdownLabel}>Total Earned:</span>
+                      <span style={styles.breakdownValue}>{loyalty.points_earned || 0}</span>
+                    </div>
+                    <div style={styles.breakdownItem}>
+                      <span style={styles.breakdownLabel}>Available Balance:</span>
+                      <span style={styles.breakdownValue}>{loyalty.balance || 0}</span>
+                    </div>
+                    <div style={styles.breakdownItem}>
+                      <span style={styles.breakdownLabel}>Redeemed:</span>
+                      <span style={styles.breakdownValue}>{loyalty.points_redeemed || 0}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleRedeemPoints}
+                    className="btn-primary"
+                    style={{marginTop: '2rem', width: '100%'}}
+                    disabled={loyalty.balance === 0}
+                  >
+                    🎁 Redeem Points
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* FEEDBACK & COMPLAINTS TAB */}
+          {activeTab === 'feedback' && (
+            <div>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.sectionTitle}>Feedback & Complaints</h2>
+                <p style={styles.sectionDescription}>We value your feedback</p>
+              </div>
+
+              <div style={styles.feedbackGrid}>
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">📝 Submit Feedback</h3>
+                  </div>
+                  <FeedbackForm userId={user.id} />
+                </div>
+
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">📢 File a Complaint</h3>
+                  </div>
+                  <ComplaintForm userId={user.id} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Footer */}
         <footer style={styles.footer}>
-          <p>&copy; 2025 Mnet Hotspot — Stay Connected, Stay Rewarded</p>
+          <p>&copy; 2025 Mnet Home Internet — Connecting Homes, Building Communities</p>
         </footer>
       </div>
     </div>
@@ -162,9 +354,9 @@ const styles = {
     width: '100px',
     height: '100px',
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
     marginBottom: '1.5rem',
-    boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)',
+    boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
   },
   icon: {
     width: '50px',
@@ -176,7 +368,7 @@ const styles = {
     fontWeight: '700',
     color: '#f1f5f9',
     marginBottom: '0.5rem',
-    background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
   },
@@ -184,68 +376,192 @@ const styles = {
     fontSize: '1.25rem',
     color: '#94a3b8',
   },
-  adminPanel: {
+  tabContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '2rem',
+    borderBottom: '2px solid #334155',
+    flexWrap: 'wrap',
+  },
+  tab: {
+    padding: '0.75rem 1.5rem',
+    background: 'transparent',
+    border: 'none',
+    color: '#94a3b8',
+    fontSize: '1rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    borderBottom: '2px solid transparent',
+    marginBottom: '-2px',
+    transition: 'all 0.2s ease',
+  },
+  tabActive: {
+    color: '#10b981',
+    borderBottomColor: '#10b981',
+  },
+  tabContent: {
+    minHeight: '400px',
+  },
+  sectionHeader: {
     marginBottom: '2rem',
   },
-  adminGrid: {
+  sectionTitle: {
+    fontSize: '1.75rem',
+    fontWeight: '600',
+    color: '#f1f5f9',
+    marginBottom: '0.5rem',
+  },
+  sectionDescription: {
+    color: '#94a3b8',
+    fontSize: '1rem',
+  },
+  loading: {
+    textAlign: 'center',
+    padding: '3rem',
+    color: '#94a3b8',
+    fontSize: '1.125rem',
+  },
+  plansGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '1.5rem',
   },
-  adminCard: {
-    padding: '1.5rem',
-    background: 'rgba(99, 102, 241, 0.05)',
-    border: '1px solid rgba(99, 102, 241, 0.2)',
-    borderRadius: '0.75rem',
-    transition: 'all 0.2s ease',
+  planCard: {
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     cursor: 'pointer',
   },
-  adminCardIcon: {
-    width: '48px',
-    height: '48px',
-    borderRadius: '0.5rem',
-    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  planHeader: {
+    marginBottom: '1.5rem',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid #334155',
+  },
+  planName: {
+    fontSize: '1.5rem',
+    fontWeight: '600',
+    color: '#f1f5f9',
+    marginBottom: '1rem',
+  },
+  planPrice: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '0.25rem',
+  },
+  currency: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+  },
+  amount: {
+    fontSize: '2.5rem',
+    fontWeight: '700',
+    color: '#10b981',
+  },
+  period: {
+    fontSize: '1rem',
+    color: '#94a3b8',
+  },
+  planFeatures: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+    marginBottom: '1.5rem',
+  },
+  feature: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    color: '#cbd5e1',
+  },
+  featureIcon: {
+    fontSize: '1.25rem',
+  },
+  whatsappBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '1rem',
-    color: 'white',
+    gap: '0.5rem',
+    background: '#25D366',
+    borderColor: '#25D366',
   },
-  userSection: {
-    marginBottom: '2rem',
+  whatsappIcon: {
+    width: '20px',
+    height: '20px',
   },
-  cardIconSmall: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '0.5rem',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '1rem',
-    color: 'white',
-  },
-  statsGrid: {
+  connectionDetails: {
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
   },
-  statItem: {
+  detailRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0.75rem',
+    padding: '1rem',
     background: 'rgba(99, 102, 241, 0.05)',
     borderRadius: '0.5rem',
   },
-  statLabel: {
+  detailLabel: {
     color: '#94a3b8',
-    fontSize: '0.875rem',
+    fontSize: '1rem',
+    fontWeight: '500',
   },
-  statValue: {
+  detailValue: {
     color: '#f1f5f9',
     fontSize: '1rem',
     fontWeight: '600',
+  },
+  loyaltyContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '2rem',
+  },
+  pointsCircle: {
+    width: '200px',
+    height: '200px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '2rem',
+    boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
+  },
+  pointsNumber: {
+    fontSize: '3rem',
+    fontWeight: '700',
+    color: 'white',
+  },
+  pointsLabel: {
+    fontSize: '0.875rem',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: '0.5rem',
+  },
+  pointsBreakdown: {
+    width: '100%',
+    maxWidth: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+  },
+  breakdownItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '0.75rem 1rem',
+    background: 'rgba(99, 102, 241, 0.05)',
+    borderRadius: '0.5rem',
+  },
+  breakdownLabel: {
+    color: '#94a3b8',
+  },
+  breakdownValue: {
+    color: '#10b981',
+    fontWeight: '600',
+  },
+  feedbackGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '1.5rem',
   },
   footer: {
     marginTop: '3rem',

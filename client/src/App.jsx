@@ -16,7 +16,8 @@ function App() {
     localStorage.setItem('username', userData.username);
     localStorage.setItem('userEmail', userData.email);
     localStorage.setItem('isAdmin', userData.isAdmin);
-    setCurrentPage('home');
+    // Redirect users to dashboard, admins to home
+    setCurrentPage(userData.isAdmin ? 'home' : 'dashboard');
   };
 
   const handleLogout = () => {
@@ -63,24 +64,26 @@ function App() {
           </div>
 
           <div style={styles.navCenter}>
-            <button
-              onClick={() => navigateTo('home')}
-              style={{...styles.navLink, ...(currentPage === 'home' ? styles.navLinkActive : {})}}
-            >
-              Home
-            </button>
+            {!user.isAdmin && (
+              <button
+                onClick={() => navigateTo('home')}
+                style={{...styles.navLink, ...(currentPage === 'home' ? styles.navLinkActive : {})}}
+              >
+                🏠 Home Internet
+              </button>
+            )}
             <button
               onClick={() => navigateTo('dashboard')}
               style={{...styles.navLink, ...(currentPage === 'dashboard' ? styles.navLinkActive : {})}}
             >
-              Dashboard
+              {user.isAdmin ? '📊 Admin Dashboard' : '📶 Mnet Hotspot'}
             </button>
             {user.isAdmin && (
               <button
                 onClick={() => navigateTo('admin')}
                 style={{...styles.navLink, ...(currentPage === 'admin' ? styles.navLinkActive : {})}}
               >
-                Admin Panel
+                ⚙️ Admin Panel
               </button>
             )}
           </div>

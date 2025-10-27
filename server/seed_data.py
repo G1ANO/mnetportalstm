@@ -129,8 +129,9 @@ def create_users():
 def create_tiers():
     """Create subscription tiers"""
     print("\n📊 Creating subscription tiers...")
-    
+
     tiers_data = [
+        # Hotspot Plans (hourly/daily)
         {
             'name': '1 Hour Plan',
             'price': 10,
@@ -179,13 +180,30 @@ def create_tiers():
             'data_limit': 50000,
             'description': 'One week of high-speed internet'
         },
+        # Home Internet Plans (monthly)
         {
-            'name': 'Monthly Plan',
+            'name': 'Home Internet 10 Mbps',
             'price': 1000,
             'duration_days': 720,  # 30 days in hours
-            'speed_limit': 100,
+            'speed_limit': 10,
+            'data_limit': 100000,
+            'description': 'Reliable home internet for basic browsing and streaming'
+        },
+        {
+            'name': 'Home Internet 20 Mbps',
+            'price': 1500,
+            'duration_days': 720,
+            'speed_limit': 20,
             'data_limit': 200000,
-            'description': 'Full month of unlimited connectivity'
+            'description': 'Fast home internet for HD streaming and gaming'
+        },
+        {
+            'name': 'Home Internet 30 Mbps',
+            'price': 2000,
+            'duration_days': 720,
+            'speed_limit': 30,
+            'data_limit': 300000,
+            'description': 'Ultra-fast home internet for multiple devices and 4K streaming'
         }
     ]
     
@@ -391,7 +409,7 @@ def main():
         print("="*50)
         print("\n📊 Summary:")
         print(f"   • Users: {len(users)} (1 admin, {len(users)-1} regular users)")
-        print(f"   • Subscription Tiers: {len(tiers)}")
+        print(f"   • Subscription Tiers: {len(tiers)} (6 hotspot + 3 home internet)")
         print(f"   • Active Subscriptions: {len(subscriptions)}")
         print(f"   • Loyalty Records: {len(loyalty_records)}")
         print(f"   • Feedback Entries: {len(feedbacks)}")
