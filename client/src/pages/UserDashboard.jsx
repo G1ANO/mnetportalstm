@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import FeedbackForm from "../components/FeedbackForm";
-
+import ComplaintForm from "../components/ComplaintForm";
 const UserDashboard = ({ user }) => {
   const [subscription, setSubscription] = useState(null);
   const [tiers, setTiers] = useState([]);
@@ -53,6 +53,7 @@ const UserDashboard = ({ user }) => {
 
       <section className="complaint-section">
         <h3>File a Complaint</h3>
+        <ComplaintForm userId={user.id} />
       </section>
 
       <section className="loyalty-section">
