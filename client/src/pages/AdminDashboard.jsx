@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import TierForm from '../components/TierForm';
 import "../styles/App.css"
@@ -6,39 +6,82 @@ import "../styles/App.css"
 const AdminDashboard = ({ user }) => {
   const [tiers, setTiers] = useState([]);
   const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
-    fetchTiers();
-    fetchComplaints();
-  }, []);
+    if (user && user.id) {
+      fetchData();
+    }
+    
+  }, [user]);
 
-  const fetchTiers = () => {
-    axios.get('http://localhost:5000/tiers')
-      .then(res => setTiers(res.data))
-      .catch(err => console.error(err));
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchTiers(), fetchComplaints()]);
+    } catch (err) {
+      console.error("Error loading admin data:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fetchComplaints = () => {
-    axios.get(`http://localhost:5000/complaints?user_id=${user.id}`)
-      .then(res => setComplaints(res.data))
-      .catch(err => console.error(err));
+
+  const fetchTiers = async () => {
+     try {
+      const res = await axios.get('http://localhost:5000/tiers');
+      setTiers(res.data);
+    } catch(err) {
+         console.error("Error fetching tiers:", err);
+    }
   };
 
-  const deleteTier = (tierId) => {
-    axios
-      .delete(`http://localhost:5000/tiers/${tierId}`, { data: { admin_id: user.id } })
-      .then(() => fetchTiers())
-      .catch(err => alert(err.response.data.error));
+  const fetchComplaints = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/complaints`);
+      setComplaints(res.data);
+    } catch (err) {
+      console.error("Error fetching complaints:", err);
+    }
   };
-  const replyComplaint = (id) => {
-    const admin_response = prompt('Enter your response:');
+
+  const deleteTier  = async (tierId) => {
+    if (!window.confirm("Are you sure you want to delete this tier?")) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/tiers/${tierId}`, {
+        data: { admin_id: user.id },
+      });
+      fetchTiers();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to delete tier.");
+    }
+  };
+
+  const replyComplaint = async (id) => {
+    const admin_response = prompt("Enter your response:");
     if (!admin_response) return;
 
-    axios
-      .patch(`http://localhost:5000/complaints/${id}/reply`, { admin_response, admin_id: user.id })
-      .then(() => fetchComplaints())
-      .catch(err => alert(err.response.data.error));
+    try {
+      await axios.patch(`http://localhost:5000/complaints/${id}/reply`, {
+        admin_response,
+        admin_id: user.id,
+      });
+      fetchComplaints();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to reply to complaint.");
+    }
   };
+
+  if (!user) {
+    return <p className="loading-text">Loading user data...</p>;
+  }
+
+  if (loading) {
+    return <p className="loading-text">Loading dashboard data...</p>;
+  }
+
 
   return (
     <div className="admin-dashboard">
@@ -49,7 +92,11 @@ const AdminDashboard = ({ user }) => {
         <TierForm adminId={user.id} onTierAdded={fetchTiers} />
 
   <div className="tier-cards">
-    {tiers.map(tier => (
+    {tiers.length === 0 ? (
+            <p>No tiers available yet.</p>
+          ) : (
+
+    tiers.map((tier) => (
       <div key={tier.id} className="tier-card">
         <h4>{tier.name}</h4>
         <p>{tier.description}</p>
@@ -61,13 +108,17 @@ const AdminDashboard = ({ user }) => {
                 <button onClick={() => deleteTier(tier.id)} className="delete-btn">Delete</button>
               </div>
       </div>
-    ))}
+    ))
+   )}
   </div>
       </section>
 
       <section className="complaints-section">
         <h3>User Complaints</h3>
         <div className="table-container">
+          {complaints.length === 0 ? (
+            <p>No complaints at the moment.</p>
+          ) : (  
     <table>
       <thead>
         <tr>
@@ -84,7 +135,8 @@ const AdminDashboard = ({ user }) => {
             <td>{c.subject}</td>
             <td>{c.user_id}</td>
             <td>
-              <span className={`status-badge ${c.status.toLowerCase()}`}>
+                <span className={`status-badge ${c.status?.toLowerCase() || ""}`}>
+              
                 {c.status}
               </span>
             </td>
@@ -96,6 +148,7 @@ const AdminDashboard = ({ user }) => {
         ))}
       </tbody>
     </table>
+      )}
   </div>
 </section>
 </div>
