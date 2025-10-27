@@ -3,20 +3,23 @@ import axios from "axios";
 import FeedbackForm from "../components/FeedbackForm";
 import ComplaintForm from "../components/ComplaintForm";
 import LoyaltyPanel from "../components/LoyaltyPanel";
+import NotificationPanel from "../components/NotificationPanel";
+import "../styles/App.css"
 
 const UserDashboard = ({ user }) => {
   const [subscription, setSubscription] = useState(null);
   const [tiers, setTiers] = useState([]);
   const [loyalty, setLoyalty] = useState(null);
-
+  const [notifications, setNotifications] = useState([]);
 
 
   useEffect(() => {
     fetchSubscription();
     fetchTiers();
     fetchLoyalty();
-
+    fetchNotifications();
   }, []);
+
     const fetchSubscription = () =>{
     axios
       .get(`http://localhost:5000/subscriptions?user_id=${user.id}`)
@@ -37,6 +40,13 @@ const UserDashboard = ({ user }) => {
     axios
       .get(`http://localhost:5000/loyalty?user_id=${user.id}`)
       .then((res) => setLoyalty(res.data))
+      .catch((err) => console.error(err));
+  };
+
+  const fetchNotifications = () => {
+    axios
+      .get(`http://localhost:5000/notifications?user_id=${user.id}`)
+      .then((res) => setNotifications(res.data))
       .catch((err) => console.error(err));
   };
 
@@ -68,14 +78,19 @@ const UserDashboard = ({ user }) => {
         <ComplaintForm userId={user.id} />
       </section>
 
+      {loyalty &&(
       <section className="loyalty-section">
         <h3>Loyalty Points</h3>
         <LoyaltyPanel loyalty={loyalty} />
       </section>
+      )}
 
+     {notifications.length > 0 &&(
       <section className="notification-section">
         <h3>Notifications</h3>
+        <NotificationPanel notifications={notifications} />
       </section>
+     )}
     </div>
   );
 };
