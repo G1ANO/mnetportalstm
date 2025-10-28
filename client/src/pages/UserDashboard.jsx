@@ -33,7 +33,8 @@ const UserDashboard = ({ user }) => {
 
   const fetchSubscription = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}`);
+      // Only fetch hotspot subscriptions
+      const res = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}&type=hotspot`);
       if (res.data.length > 0) setSubscription(res.data[0]);
     } catch (err) {
       console.error("Error fetching subscription:", err);

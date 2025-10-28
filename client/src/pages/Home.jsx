@@ -22,8 +22,8 @@ export const HomePage = ({ user }) => {
       const tiersRes = await axios.get('http://localhost:5000/tiers?type=home_internet');
       setHomeTiers(tiersRes.data);
 
-      // Fetch user subscription
-      const subRes = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}`);
+      // Fetch user subscription - only home_internet subscriptions
+      const subRes = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}&type=home_internet`);
       if (subRes.data && subRes.data.length > 0) {
         setSubscription(subRes.data[0]);
       }
@@ -114,26 +114,27 @@ export const HomePage = ({ user }) => {
     },
     tabContainer: {
       display: 'flex',
-      gap: '1rem',
+      gap: '0.5rem',
       marginBottom: '2rem',
-      borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
       flexWrap: 'wrap',
+      borderBottom: '2px solid rgba(99, 102, 241, 0.2)',
+      paddingBottom: '0.5rem',
     },
     tab: {
-      padding: '1rem 1.5rem',
+      padding: '0.75rem 1.5rem',
       background: 'transparent',
       border: 'none',
-      color: '#94a3b8',
-      fontSize: '1rem',
-      fontWeight: '500',
+      color: '#cbd5e1',
       cursor: 'pointer',
-      borderBottom: '2px solid transparent',
-      marginBottom: '-2px',
-      transition: 'all 0.3s ease',
+      fontSize: '0.95rem',
+      fontWeight: '500',
+      borderRadius: '0.5rem 0.5rem 0 0',
+      transition: 'all 0.2s',
     },
     tabActive: {
-      color: '#10b981',
-      borderBottomColor: '#10b981',
+      background: 'rgba(99, 102, 241, 0.1)',
+      color: '#6366f1',
+      borderBottom: '2px solid #6366f1',
     },
     tabContent: {
       minHeight: '400px',

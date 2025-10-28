@@ -68,13 +68,6 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
             <p style={styles.subtitle}>Sign in to your WiFi Portal account</p>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="alert alert-info" style={styles.demoAlert}>
-            <strong>Demo Credentials:</strong>
-            <br />
-            Admin: admin@mnet.com / admin123
-          </div>
-
           {/* Error Message */}
           {error && (
             <div className="alert alert-danger" style={styles.errorAlert}>

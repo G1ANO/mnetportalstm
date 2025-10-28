@@ -378,14 +378,26 @@ def create_subscription():
 def get_subscriptions():
     """Get user subscriptions."""
     user_id = request.args.get('user_id')
+    tier_type = request.args.get('type')  # Optional filter: 'hotspot' or 'home_internet'
+
     subscriptions = Subscription.query.filter_by(user_id=user_id).all()
 
     result = []
     for s in subscriptions:
         tier = SubscriptionTier.query.get(s.tier_id)
+
+        # Filter by tier_type if specified
+        if tier_type and tier and tier.tier_type != tier_type:
+            continue
+
         result.append({
             "id": s.id,
+            "tier_id": s.tier_id,
             "tier_name": tier.name if tier else None,
+            "tier_type": tier.tier_type if tier else None,
+            "price": float(tier.price) if tier else None,
+            "duration_days": tier.duration_days if tier else None,
+            "speed_limit": tier.speed_limit if tier else None,
             "status": s.status,
             "start_date": s.start_date.isoformat() if s.start_date else None,
             "end_date": s.end_date.isoformat() if s.end_date else None
