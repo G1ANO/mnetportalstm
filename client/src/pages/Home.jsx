@@ -44,7 +44,7 @@ export const HomePage = ({ user }) => {
     const message = encodeURIComponent(
       `Hello! I would like to request a Home Internet connection.\n\nName: ${user.username}\nEmail: ${user.email || user.userEmail}`
     );
-    const whatsappUrl = `https://wa.me/254700000000?text=${message}`;
+    const whatsappUrl = `https://wa.me/254737115102?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
