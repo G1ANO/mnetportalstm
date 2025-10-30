@@ -7,8 +7,6 @@ const HomeInternetPanel = ({ user }) => {
   const [tiers, setTiers] = useState([]);
   const [users, setUsers] = useState([]);
   const [loyaltyRecords, setLoyaltyRecords] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Tier form state
@@ -19,7 +17,6 @@ const HomeInternetPanel = ({ user }) => {
     price: '',
     duration_days: '',
     speed_limit: '',
-    data_limit: '',
     description: '',
     tier_type: 'home_internet'
   });
@@ -36,9 +33,7 @@ const HomeInternetPanel = ({ user }) => {
       await Promise.all([
         fetchTiers(),
         fetchUsers(),
-        fetchLoyaltyRecords(),
-        fetchFeedbacks(),
-        fetchComplaints()
+        fetchLoyaltyRecords()
       ]);
     } catch (err) {
       console.error("Error loading admin data:", err);
@@ -92,23 +87,20 @@ const HomeInternetPanel = ({ user }) => {
     }
   };
 
-  const fetchFeedbacks = async () => {
+  const disconnectUser = async (userId) => {
+    if (!window.confirm("Disconnect this user from the network?")) return;
     try {
-      const res = await axios.get('http://localhost:5000/feedbacks');
-      setFeedbacks(res.data);
-    } catch(err) {
-      console.error("Error fetching feedbacks:", err);
+      await axios.post(`http://localhost:5000/users/${userId}/disconnect`, {
+        admin_id: user.id
+      });
+      alert('User disconnected successfully!');
+      fetchUsers();
+    } catch (err) {
+      alert('Error disconnecting user: ' + err.message);
     }
   };
 
-  const fetchComplaints = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/complaints?user_id=${user.id}`);
-      setComplaints(res.data);
-    } catch (err) {
-      console.error("Error fetching complaints:", err);
-    }
-  };
+
 
   const handleCreateTier = async (e) => {
     e.preventDefault();
@@ -120,7 +112,7 @@ const HomeInternetPanel = ({ user }) => {
       });
       alert('Home Internet tier created successfully!');
       setShowTierForm(false);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', description: '', tier_type: 'home_internet' });
       fetchTiers();
     } catch (err) {
       alert('Error creating tier: ' + err.message);
@@ -137,7 +129,7 @@ const HomeInternetPanel = ({ user }) => {
       });
       alert('Home Internet tier updated successfully!');
       setEditingTier(null);
-      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+      setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', description: '', tier_type: 'home_internet' });
       fetchTiers();
     } catch (err) {
       alert('Error updating tier: ' + err.message);
@@ -163,28 +155,13 @@ const HomeInternetPanel = ({ user }) => {
       price: tier.price,
       duration_days: tier.duration_days,
       speed_limit: tier.speed_limit,
-      data_limit: tier.data_limit,
       description: tier.description,
       tier_type: 'home_internet'
     });
     setShowTierForm(false);
   };
 
-  const handleReplyComplaint = async (complaintId) => {
-    const response = prompt("Enter your response:");
-    if (!response) return;
-    
-    try {
-      await axios.patch(`http://localhost:5000/complaints/${complaintId}/reply`, {
-        admin_response: response,
-        admin_id: user.id
-      });
-      alert('Response sent successfully!');
-      fetchComplaints();
-    } catch (err) {
-      alert('Error sending response: ' + err.message);
-    }
-  };
+
 
   if (!user) {
     return <p className="loading-text">Loading user data...</p>;
@@ -225,12 +202,6 @@ const HomeInternetPanel = ({ user }) => {
           >
             Loyalty Program
           </button>
-          <button
-            onClick={() => setActiveTab('feedback')}
-            style={{...styles.tab, ...(activeTab === 'feedback' ? styles.activeTab : {})}}
-          >
-            Feedback & Complaints
-          </button>
         </div>
 
         {/* Home Internet Plans Tab */}
@@ -242,7 +213,7 @@ const HomeInternetPanel = ({ user }) => {
                 onClick={() => {
                   setShowTierForm(!showTierForm);
                   setEditingTier(null);
-                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+                  setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', description: '', tier_type: 'home_internet' });
                 }}
                 className="btn-primary"
               >
@@ -299,17 +270,11 @@ const HomeInternetPanel = ({ user }) => {
                         required
                       />
                     </div>
-                    <div>
-                      <label className="form-label">Data Limit (MB) *</label>
-                      <input
-                        type="number"
-                        className="form-input"
-                        value={tierForm.data_limit}
-                        onChange={(e) => setTierForm({...tierForm, data_limit: e.target.value})}
-                        placeholder="e.g., 100000 (100GB)"
-                        required
-                      />
-                    </div>
+                  </div>
+                  <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px'}}>
+                    <p style={{margin: 0, color: '#10b981', fontSize: '0.9rem'}}>
+                      ℹ️ <strong>Unlimited Data:</strong> Home Internet plans come with unlimited data by default.
+                    </p>
                   </div>
                   <div>
                     <label className="form-label">Description</label>
@@ -331,7 +296,7 @@ const HomeInternetPanel = ({ user }) => {
                       onClick={() => {
                         setShowTierForm(false);
                         setEditingTier(null);
-                        setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', data_limit: '', description: '', tier_type: 'home_internet' });
+                        setTierForm({ name: '', price: '', duration_days: '', speed_limit: '', description: '', tier_type: 'home_internet' });
                       }}
                     >
                       Cancel
@@ -407,6 +372,7 @@ const HomeInternetPanel = ({ user }) => {
                     <th>Email</th>
                     <th>Status</th>
                     <th>Joined</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -416,11 +382,20 @@ const HomeInternetPanel = ({ user }) => {
                       <td>{u.name}</td>
                       <td>{u.email}</td>
                       <td>
-                        <span className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}>
-                          {u.is_active ? 'Active' : 'Inactive'}
+                        <span className={`badge ${u.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                          {u.status === 'active' ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <button
+                          onClick={() => disconnectUser(u.id)}
+                          className="btn-sm btn-danger"
+                          disabled={u.status !== 'active'}
+                        >
+                          Disconnect
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -460,85 +435,6 @@ const HomeInternetPanel = ({ user }) => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        )}
-
-        {/* Feedback & Complaints Tab */}
-        {activeTab === 'feedback' && (
-          <div style={styles.tabContent}>
-            <h2>Feedback & Complaints</h2>
-
-            <div style={{marginTop: '1.5rem'}}>
-              <h3 style={{marginBottom: '1rem'}}>User Feedback</h3>
-              <div className="card">
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>User ID</th>
-                      <th>Tier</th>
-                      <th>Rating</th>
-                      <th>Comment</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {feedbacks.map(fb => (
-                      <tr key={fb.id}>
-                        <td>{fb.user_id}</td>
-                        <td>{fb.tier_id}</td>
-                        <td>
-                          <span style={styles.rating}>{'⭐'.repeat(fb.rating)}</span>
-                        </td>
-                        <td>{fb.comment}</td>
-                        <td>{new Date(fb.created_at).toLocaleDateString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div style={{marginTop: '2rem'}}>
-              <h3 style={{marginBottom: '1rem'}}>User Complaints</h3>
-              <div className="card">
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>User ID</th>
-                      <th>Subject</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Response</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {complaints.map(complaint => (
-                      <tr key={complaint.id}>
-                        <td>{complaint.user_id}</td>
-                        <td>{complaint.subject}</td>
-                        <td>{complaint.description}</td>
-                        <td>
-                          <span className={`badge badge-${complaint.status === 'resolved' ? 'success' : 'warning'}`}>
-                            {complaint.status}
-                          </span>
-                        </td>
-                        <td>{complaint.admin_response || '-'}</td>
-                        <td>
-                          <button
-                            onClick={() => handleReplyComplaint(complaint.id)}
-                            className="btn-primary"
-                            style={{padding: '0.25rem 0.75rem', fontSize: '0.875rem'}}
-                          >
-                            Reply
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         )}

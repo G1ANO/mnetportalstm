@@ -2,7 +2,22 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../index.css';
 import FeedbackForm from '../components/FeedbackForm';
-import ComplaintForm from '../components/ComplaintForm';
+
+// Utility function to format datetime in GMT+3 (East Africa Time)
+const formatToGMT3 = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleString('en-KE', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+};
 
 export const HomePage = ({ user }) => {
   const [activeTab, setActiveTab] = useState('plans');
@@ -10,6 +25,7 @@ export const HomePage = ({ user }) => {
   const [subscription, setSubscription] = useState(null);
   const [loyalty, setLoyalty] = useState({ points_earned: 0, balance: 0, points_redeemed: 0 });
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -33,6 +49,10 @@ export const HomePage = ({ user }) => {
       if (loyaltyRes.data) {
         setLoyalty(loyaltyRes.data);
       }
+
+      // Fetch notifications
+      const notifRes = await axios.get(`http://localhost:5000/notifications?user_id=${user.id}`);
+      setNotifications(notifRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -53,26 +73,7 @@ export const HomePage = ({ user }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRedeemPoints = async () => {
-    if (loyalty.balance === 0) {
-      alert('You have no points to redeem!');
-      return;
-    }
 
-    if (window.confirm(`Redeem ${loyalty.balance} points?`)) {
-      try {
-        await axios.post('http://localhost:5000/loyalty/redeem', {
-          user_id: user.id,
-          points: loyalty.balance
-        });
-        alert('Points redeemed successfully!');
-        fetchData();
-      } catch (error) {
-        console.error('Error redeeming points:', error);
-        alert('Failed to redeem points');
-      }
-    }
-  };
 
   // Styles object
   const styles = {
@@ -350,17 +351,6 @@ export const HomePage = ({ user }) => {
       fontWeight: '700',
       color: '#10b981',
     },
-    redeemBtn: {
-      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      padding: '0.875rem 2rem',
-      fontSize: '1rem',
-      fontWeight: '600',
-      border: 'none',
-      borderRadius: '8px',
-      color: '#fff',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-    },
     feedbackGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -510,13 +500,13 @@ export const HomePage = ({ user }) => {
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>Time In:</span>
                       <span style={styles.detailValue}>
-                        {subscription.start_date ? new Date(subscription.start_date).toLocaleString() : 'N/A'}
+                        {formatToGMT3(subscription.start_date)} EAT
                       </span>
                     </div>
                     <div style={styles.detailRow}>
                       <span style={styles.detailLabel}>Time Expected Out:</span>
                       <span style={styles.detailValue}>
-                        {subscription.end_date ? new Date(subscription.end_date).toLocaleString() : 'N/A'}
+                        {formatToGMT3(subscription.end_date)} EAT
                       </span>
                     </div>
                   </div>
@@ -580,14 +570,11 @@ export const HomePage = ({ user }) => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleRedeemPoints}
-                    className="btn-primary"
-                    style={{marginTop: '2rem', width: '100%'}}
-                    disabled={loyalty.balance === 0}
-                  >
-                    Redeem Points
-                  </button>
+                  <div style={{marginTop: '2rem', padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '8px'}}>
+                    <p style={{margin: 0, color: '#818cf8', fontSize: '0.95rem', textAlign: 'center'}}>
+                      💡 <strong>Redeem your points on the Hotspot Dashboard</strong> - Visit the Loyalty Program tab to redeem points for packages.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -601,21 +588,7 @@ export const HomePage = ({ user }) => {
                 <p style={styles.sectionDescription}>We value your feedback</p>
               </div>
 
-              <div style={styles.feedbackGrid}>
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">📝 Submit Feedback</h3>
-                  </div>
-                  <FeedbackForm userId={user.id} tiers={homeTiers} />
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">File a Complaint</h3>
-                  </div>
-                  <ComplaintForm userId={user.id} />
-                </div>
-              </div>
+              <FeedbackForm userId={user.id} notifications={notifications} subscriptionType="home_internet" />
             </div>
           )}
         </div>

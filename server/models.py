@@ -1,9 +1,14 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
 bcrypt=Bcrypt()
+
+# Helper function for timezone-aware datetime
+def utc_now():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -14,8 +19,8 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(20), default='user')
     status = db.Column(db.String(20), default='active')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     subscriptions = db.relationship('Subscription', backref='user', lazy=True)
     payments = db.relationship('Payment', backref='user', lazy=True)
@@ -45,22 +50,21 @@ class SubscriptionTier(db.Model):
     data_limit = db.Column(db.Integer)
     description = db.Column(db.Text)
     tier_type = db.Column(db.String(20), default='hotspot')  # 'hotspot' or 'home_internet'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
-    feedbacks = db.relationship('Feedback', backref='tier', lazy=True)
     subscriptions = db.relationship('Subscription', backref='tier', lazy=True)
 
 class Subscription(db.Model):
     __tablename__ = 'subscriptions'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False)
-    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    start_date = db.Column(db.DateTime, default=utc_now)
     end_date = db.Column(db.DateTime)
     status = db.Column(db.String(20), default='active')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 class Payment(db.Model):
     __tablename__ = 'payments'
@@ -71,18 +75,23 @@ class Payment(db.Model):
     payment_method = db.Column(db.String(50)) #eg mpesa
     transaction_reference = db.Column(db.String(100))
     status = db.Column(db.String(20), default='success') #eg success or failed
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 
 class Feedback(db.Model):
     __tablename__ = 'feedbacks'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
+    type = db.Column(db.String(20), default='feedback')  # 'feedback' or 'complaint'
+    subscription_type = db.Column(db.String(20), default='hotspot')  # 'hotspot' or 'home_internet'
+    subject = db.Column(db.String(200))  # For complaints
+    rating = db.Column(db.Integer)  # Overall app rating (1-5), optional for complaints
     comment = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='pending')  # pending, resolved
+    admin_response = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
 class Complaint(db.Model):
 
@@ -94,9 +103,9 @@ class Complaint(db.Model):
     description = db.Column(db.Text)
     status = db.Column(db.String(20), default='pending')  # pending, resolved, etc.
     admin_response = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
 
 class LoyaltyPoint(db.Model):
     __tablename__ = 'loyalty_points'
@@ -106,7 +115,7 @@ class LoyaltyPoint(db.Model):
     points_earned = db.Column(db.Integer, default=0)
     points_redeemed = db.Column(db.Integer, default=0)
     balance = db.Column(db.Integer, default=0)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=utc_now)
 
 class Redemption(db.Model):
     __tablename__ = 'redemptions'
@@ -116,7 +125,7 @@ class Redemption(db.Model):
     points_used = db.Column(db.Integer)
     reward_type = db.Column(db.String(100))
     details = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -127,7 +136,7 @@ class Notification(db.Model):
     channel = db.Column(db.String(50))
     type = db.Column(db.String(50))
     status = db.Column(db.String(20), default='unread')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 class UsagePattern(db.Model):
     __tablename__ = 'usage_patterns'
@@ -138,16 +147,16 @@ class UsagePattern(db.Model):
     session_duration = db.Column(db.Integer)
     most_used_hours = db.Column(db.String(50))
     location = db.Column(db.String(100))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    timestamp = db.Column(db.DateTime, default=utc_now)
+
 class AdminActionLog(db.Model):
-    __tablename__ = 'admin_action_logs'  
+    __tablename__ = 'admin_action_logs'
 
     id = db.Column(db.Integer, primary_key=True)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     action = db.Column(db.String(100), nullable=False)
     target_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     details = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
     
     

@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from models import db, bcrypt, User, SubscriptionTier, Subscription, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -133,32 +134,60 @@ def delete_tier(id):
 
 @app.route('/feedbacks', methods=['GET'])
 def get_feedbacks():
-    feedbacks = Feedback.query.all()
+    """Fetch feedbacks/complaints (admin sees all, user sees own)."""
+    user_id = request.args.get('user_id')
+    subscription_type = request.args.get('subscription_type')  # Optional filter for admin
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if user.role == 'admin':
+        # Admin can filter by subscription_type
+        if subscription_type:
+            feedbacks = Feedback.query.filter_by(subscription_type=subscription_type).all()
+        else:
+            feedbacks = Feedback.query.all()
+    else:
+        feedbacks = Feedback.query.filter_by(user_id=user.id).all()
+
     result = [{
         "id": f.id,
         "user_id": f.user_id,
-        "tier_id": f.tier_id,
+        "type": f.type,
+        "subscription_type": f.subscription_type,
+        "subject": f.subject,
         "rating": f.rating,
-        "comment": f.comment
+        "comment": f.comment,
+        "status": f.status,
+        "admin_response": f.admin_response,
+        "created_at": f.created_at.isoformat() if f.created_at else None,
+        "updated_at": f.updated_at.isoformat() if f.updated_at else None
     } for f in feedbacks]
     return jsonify(result), 200
-#this returns all feedback submitted by users
 
 @app.route('/feedbacks', methods=['POST'])
 def add_feedback():
+    """User submits feedback or complaint."""
     data = request.get_json()
     user_id = data.get('user_id')
+    feedback_type = data.get('type', 'feedback')  # 'feedback' or 'complaint'
+    subscription_type = data.get('subscription_type', 'hotspot')  # 'hotspot' or 'home_internet'
 
     feedback = Feedback(
         user_id=user_id,
-        tier_id=data.get('tier_id'),
-        rating=data.get('rating'),
-        comment=data.get('comment')
+        type=feedback_type,
+        subscription_type=subscription_type,
+        subject=data.get('subject'),
+        rating=data.get('rating'),  # Optional for complaints
+        comment=data.get('comment'),
+        status='pending'
     )
     db.session.add(feedback)
     db.session.commit()
-    return jsonify({"message": "Feedback submitted successfully"}), 201
-#this allows users to submit feedback about a subscription tier
+
+    message = "Feedback submitted successfully" if feedback_type == 'feedback' else "Complaint submitted successfully"
+    return jsonify({"message": message}), 201
 
 @app.route('/complaints', methods=['GET'])
 def get_complaints():
@@ -238,20 +267,55 @@ def get_loyalty_points():
 def get_notifications():
     """Fetch user notifications."""
     user_id = request.args.get('user_id')
-    notes = Notification.query.filter_by(user_id=user_id).all()
+    notes = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).all()
 
     result = [{
+        "id": n.id,
         "message": n.message,
         "channel": n.channel,
         "type": n.type,
-        "status": n.status
+        "status": n.status,
+        "created_at": n.created_at.isoformat() if n.created_at else None
     } for n in notes]
 
     return jsonify(result), 200
 
+@app.route('/notifications/<int:notification_id>/read', methods=['PATCH'])
+def mark_notification_read(notification_id):
+    """Mark a notification as read."""
+    notification = Notification.query.get_or_404(notification_id)
+    notification.status = 'read'
+    db.session.commit()
+    return jsonify({"message": "Notification marked as read"}), 200
+
+@app.route('/notifications/mark-all-read', methods=['PATCH'])
+def mark_all_notifications_read():
+    """Mark all user notifications as read."""
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+
+    Notification.query.filter_by(user_id=user_id, status='unread').update({'status': 'read'})
+    db.session.commit()
+    return jsonify({"message": "All notifications marked as read"}), 200
+
 @app.route('/users', methods=['GET'])
 def get_users():
     """Get all users with their subscription info (admin only)."""
+    # Auto-expire subscriptions before fetching user data
+    now = datetime.now(timezone.utc)
+    active_subscriptions = Subscription.query.filter_by(status='active').all()
+    for s in active_subscriptions:
+        if s.end_date:
+            # Handle both timezone-aware and naive datetimes
+            end_date = s.end_date
+            if end_date.tzinfo is None:
+                # If naive, assume it's UTC and make it aware
+                end_date = end_date.replace(tzinfo=timezone.utc)
+            if end_date < now:
+                s.status = 'expired'
+    db.session.commit()
+
     users = User.query.all()
     result = []
     for u in users:
@@ -271,7 +335,8 @@ def get_users():
             "subscription_tier": tier_name,
             "activated_at": subscription.start_date.isoformat() if subscription else None,
             "status": u.status,
-            "usage_mb": getattr(u, 'usage_mb', 0)
+            "usage_mb": getattr(u, 'usage_mb', 0),
+            "created_at": u.created_at.isoformat() if u.created_at else None
         })
     return jsonify(result), 200
 
@@ -325,7 +390,7 @@ def get_all_loyalty():
 
 @app.route('/feedbacks/<int:feedback_id>/reply', methods=['PATCH'])
 def reply_to_feedback(feedback_id):
-    """Admin responds to feedback."""
+    """Admin responds to feedback or complaint."""
     data = request.get_json()
     admin_id = data.get('admin_id')
     admin = User.query.get(admin_id)
@@ -334,8 +399,8 @@ def reply_to_feedback(feedback_id):
         return jsonify({"error": "Admins only"}), 403
 
     feedback = Feedback.query.get_or_404(feedback_id)
-    # You might want to add an admin_response field to Feedback model
-    # For now, we'll just acknowledge the response
+    feedback.admin_response = data.get('admin_response')
+    feedback.status = data.get('status', 'resolved')
     db.session.commit()
     return jsonify({"message": "Response sent successfully"}), 200
 
@@ -348,16 +413,20 @@ def create_subscription():
 
     tier = SubscriptionTier.query.get_or_404(tier_id)
 
+    # Get current time for subscription start and old subscription termination
+    current_time = datetime.now(timezone.utc)
+
     # Mark all existing active subscriptions for this user and tier type as expired
+    # and update their end_date to the current time (when they were terminated)
     existing_subscriptions = Subscription.query.filter_by(user_id=user_id, status='active').all()
     for sub in existing_subscriptions:
         existing_tier = SubscriptionTier.query.get(sub.tier_id)
         if existing_tier and existing_tier.tier_type == tier.tier_type:
             sub.status = 'expired'
+            sub.end_date = current_time  # Set end_date to when it was actually terminated
 
-    # Calculate end date based on duration_days
-    from datetime import datetime, timedelta
-    start_date = datetime.utcnow()
+    # Calculate end date based on duration_days (using timezone-aware datetime)
+    start_date = current_time
     end_date = start_date + timedelta(hours=tier.duration_days)  # Assuming duration_days is actually hours
 
     subscription = Subscription(
@@ -369,14 +438,17 @@ def create_subscription():
     )
     db.session.add(subscription)
 
-    # Award loyalty points (e.g., 10 points per subscription)
+    # Award loyalty points: 10 points per shilling spent
+    # e.g., 10 KSH package = 100 points, 50 KSH = 500 points
+    points_to_award = int(tier.price * 10)
+
     loyalty = LoyaltyPoint.query.filter_by(user_id=user_id).first()
     if not loyalty:
-        loyalty = LoyaltyPoint(user_id=user_id, points_earned=10, points_redeemed=0, balance=10)
+        loyalty = LoyaltyPoint(user_id=user_id, points_earned=points_to_award, points_redeemed=0, balance=points_to_award)
         db.session.add(loyalty)
     else:
-        loyalty.points_earned += 10
-        loyalty.balance += 10
+        loyalty.points_earned += points_to_award
+        loyalty.balance += points_to_award
 
     db.session.commit()
     return jsonify({"message": "Subscription created successfully"}), 201
@@ -384,17 +456,22 @@ def create_subscription():
 @app.route('/subscriptions', methods=['GET'])
 def get_subscriptions():
     """Get user subscriptions."""
-    from datetime import datetime
     user_id = request.args.get('user_id')
     tier_type = request.args.get('type')  # Optional filter: 'hotspot' or 'home_internet'
 
     subscriptions = Subscription.query.filter_by(user_id=user_id).order_by(Subscription.start_date.desc()).all()
 
-    # Auto-update expired subscriptions
-    now = datetime.utcnow()
+    # Auto-update expired subscriptions (using timezone-aware datetime)
+    now = datetime.now(timezone.utc)
     for s in subscriptions:
-        if s.status == 'active' and s.end_date and s.end_date < now:
-            s.status = 'expired'
+        if s.status == 'active' and s.end_date:
+            # Handle both timezone-aware and naive datetimes
+            end_date = s.end_date
+            if end_date.tzinfo is None:
+                # If naive, assume it's UTC and make it aware
+                end_date = end_date.replace(tzinfo=timezone.utc)
+            if end_date < now:
+                s.status = 'expired'
     db.session.commit()
 
     result = []
@@ -421,19 +498,80 @@ def get_subscriptions():
 
 @app.route('/loyalty/redeem', methods=['POST'])
 def redeem_loyalty_points():
-    """Redeem loyalty points."""
+    """Redeem loyalty points for a subscription tier.
+
+    Redemption rate: 70 points per 1 KSH
+    e.g., 10 KSH package requires 700 points
+          50 KSH package requires 3500 points
+    """
     data = request.get_json()
     user_id = data.get('user_id')
-    points = data.get('points')
+    tier_id = data.get('tier_id')  # The tier to redeem
 
+    if not tier_id:
+        return jsonify({"error": "Tier ID is required"}), 400
+
+    # Get the tier
+    tier = SubscriptionTier.query.get(tier_id)
+    if not tier:
+        return jsonify({"error": "Tier not found"}), 404
+
+    # Calculate points required: 70 points per shilling
+    points_required = int(tier.price * 70)
+
+    # Check user's loyalty balance
     loyalty = LoyaltyPoint.query.filter_by(user_id=user_id).first()
-    if not loyalty or loyalty.balance < points:
-        return jsonify({"error": "Insufficient points"}), 400
+    if not loyalty or loyalty.balance < points_required:
+        return jsonify({
+            "error": "Insufficient points",
+            "required": points_required,
+            "available": loyalty.balance if loyalty else 0
+        }), 400
 
-    loyalty.points_redeemed += points
-    loyalty.balance -= points
+    # Get current time for subscription
+    current_time = datetime.now(timezone.utc)
+
+    # Mark all existing active subscriptions for this user and tier type as expired
+    existing_subscriptions = Subscription.query.filter_by(user_id=user_id, status='active').all()
+    for sub in existing_subscriptions:
+        existing_tier = SubscriptionTier.query.get(sub.tier_id)
+        if existing_tier and existing_tier.tier_type == tier.tier_type:
+            sub.status = 'expired'
+            sub.end_date = current_time
+
+    # Create the subscription
+    start_date = current_time
+    end_date = start_date + timedelta(hours=tier.duration_days)
+
+    subscription = Subscription(
+        user_id=user_id,
+        tier_id=tier_id,
+        start_date=start_date,
+        end_date=end_date,
+        status='active'
+    )
+    db.session.add(subscription)
+
+    # Deduct points
+    loyalty.points_redeemed += points_required
+    loyalty.balance -= points_required
+
+    # Create redemption record
+    from models import Redemption
+    redemption = Redemption(
+        user_id=user_id,
+        points_used=points_required,
+        reward_type='subscription',
+        details=f"Redeemed {tier.name} subscription for {points_required} points"
+    )
+    db.session.add(redemption)
+
     db.session.commit()
-    return jsonify({"message": "Points redeemed successfully"}), 200
+    return jsonify({
+        "message": "Subscription redeemed successfully!",
+        "points_used": points_required,
+        "remaining_balance": loyalty.balance
+    }), 200
 
 @app.route('/communications/send', methods=['POST'])
 def send_communication():

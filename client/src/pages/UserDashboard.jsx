@@ -1,8 +1,25 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import FeedbackForm from "../components/FeedbackForm";
-import ComplaintForm from "../components/ComplaintForm";
 import "../index.css";
+
+// Utility function to format datetime in GMT+3 (East Africa Time)
+const formatToGMT3 = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  // Convert to GMT+3 by adding 3 hours
+  const gmt3Date = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+  return gmt3Date.toLocaleString('en-KE', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+};
 
 const UserDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('plans');
@@ -10,6 +27,9 @@ const UserDashboard = ({ user }) => {
   const [tiers, setTiers] = useState([]);
   const [loyalty, setLoyalty] = useState({ points_earned: 0, balance: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedRedeemTier, setSelectedRedeemTier] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -22,7 +42,8 @@ const UserDashboard = ({ user }) => {
       await Promise.all([
         fetchSubscription(),
         fetchTiers(),
-        fetchLoyalty()
+        fetchLoyalty(),
+        fetchNotifications()
       ]);
     } catch (err) {
       console.error("Error loading data:", err);
@@ -61,31 +82,138 @@ const UserDashboard = ({ user }) => {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/notifications?user_id=${user.id}`);
+      setNotifications(res.data);
+      // Count unread notifications
+      const unread = res.data.filter(n => n.status === 'unread').length;
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await axios.patch(`http://localhost:5000/notifications/mark-all-read?user_id=${user.id}`);
+      fetchNotifications(); // Refresh notifications
+    } catch (err) {
+      console.error("Error marking notifications as read:", err);
+    }
+  };
+
+  const handleBellClick = () => {
+    setActiveTab('feedback'); // Switch to feedback tab where notifications will be shown
+    markAllNotificationsRead(); // Mark all as read when bell is clicked
+  };
+
+  // Check if we should auto-switch to feedback tab (when bell is clicked from navbar)
+  useEffect(() => {
+    const checkAndSwitchToFeedback = () => {
+      const shouldSwitchToFeedback = localStorage.getItem('switchToFeedbackTab');
+      if (shouldSwitchToFeedback === 'true') {
+        setActiveTab('feedback');
+        localStorage.removeItem('switchToFeedbackTab'); // Clear the signal
+      }
+    };
+
+    // Check on mount
+    checkAndSwitchToFeedback();
+
+    // Listen for storage events (when bell is clicked while already on dashboard)
+    window.addEventListener('storage', checkAndSwitchToFeedback);
+
+    return () => {
+      window.removeEventListener('storage', checkAndSwitchToFeedback);
+    };
+  }, []);
+
   const handleSubscribe = async (tierId) => {
-    if (!window.confirm("Subscribe to this plan?")) return;
+    // Check if there's an active subscription
+    const activeSubscription = subscriptions.find(sub => sub.status === 'active');
+
+    if (activeSubscription) {
+      // Calculate time remaining
+      const endDate = new Date(activeSubscription.end_date);
+      const now = new Date();
+      const timeRemaining = endDate - now;
+      const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+      const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+
+      // Show detailed confirmation dialog
+      const confirmMessage = `⚠️ SUBSCRIPTION OVERRIDE WARNING ⚠️\n\n` +
+        `You currently have an active subscription:\n` +
+        `Plan: ${activeSubscription.tier_name}\n` +
+        `Time Remaining: ${hoursRemaining} hours and ${minutesRemaining} minutes\n` +
+        `Expires: ${formatToGMT3(activeSubscription.end_date)} EAT\n\n` +
+        `If you continue, your current subscription will be REPLACED immediately and the remaining time will be lost.\n\n` +
+        `Do you want to proceed with the new subscription?`;
+
+      if (!window.confirm(confirmMessage)) {
+        return; // User cancelled
+      }
+    } else {
+      // No active subscription, just confirm normally
+      if (!window.confirm("Subscribe to this plan?")) return;
+    }
+
     try {
       await axios.post('http://localhost:5000/subscriptions', {
         user_id: user.id,
         tier_id: tierId
       });
-      alert('Subscription successful!');
+      alert('✅ Subscription successful!');
       fetchSubscription();
     } catch (err) {
-      alert('Error subscribing: ' + err.message);
+      alert('❌ Error subscribing: ' + err.message);
     }
   };
 
-  const handleRedeemPoints = async () => {
-    if (!window.confirm(`Redeem ${loyalty.balance} points?`)) return;
+  const handleRedeemPoints = async (tierId) => {
+    if (!tierId) {
+      alert('Please select a package to redeem');
+      return;
+    }
+
+    // Find the selected tier
+    const selectedTier = tiers.find(t => t.id === parseInt(tierId));
+    if (!selectedTier) {
+      alert('Invalid package selected');
+      return;
+    }
+
+    // Calculate points required: 70 points per shilling
+    const pointsRequired = selectedTier.price * 70;
+
+    // Check if user has enough points
+    if (loyalty.balance < pointsRequired) {
+      alert(`❌ Insufficient points!\n\nRequired: ${pointsRequired} points\nYou have: ${loyalty.balance} points\nYou need ${pointsRequired - loyalty.balance} more points`);
+      return;
+    }
+
+    // Confirm redemption
+    const confirmMessage = `🎁 REDEEM SUBSCRIPTION\n\n` +
+      `Package: ${selectedTier.name}\n` +
+      `Price: ${selectedTier.price} KSH\n` +
+      `Points Required: ${pointsRequired} points\n` +
+      `Your Balance: ${loyalty.balance} points\n` +
+      `Remaining After: ${loyalty.balance - pointsRequired} points\n\n` +
+      `Do you want to redeem this package?`;
+
+    if (!window.confirm(confirmMessage)) return;
+
     try {
-      await axios.post('http://localhost:5000/loyalty/redeem', {
+      const response = await axios.post('http://localhost:5000/loyalty/redeem', {
         user_id: user.id,
-        points: loyalty.balance
+        tier_id: tierId
       });
-      alert('Points redeemed successfully!');
+      alert(`✅ ${response.data.message}\n\nPoints Used: ${response.data.points_used}\nRemaining Balance: ${response.data.remaining_balance}`);
       fetchLoyalty();
+      fetchSubscription();
     } catch (err) {
-      alert('Error redeeming points: ' + err.message);
+      const errorMsg = err.response?.data?.error || err.message;
+      alert('❌ Error redeeming points: ' + errorMsg);
     }
   };
 
@@ -101,7 +229,16 @@ const UserDashboard = ({ user }) => {
   return (
     <div style={styles.pageContainer}>
       <div className="container">
-        <h1 style={styles.title}>Mnet Hotspot</h1>
+        {/* Header with Circular Logo */}
+        <div style={styles.header}>
+          <div style={styles.iconContainer}>
+            <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+            </svg>
+          </div>
+          <h1 style={styles.heading}>Mnet Portal</h1>
+          <p style={styles.subHeading}>Your WiFi Hotspot Dashboard</p>
+        </div>
 
         {/* Tab Navigation */}
         <div style={styles.tabContainer}>
@@ -188,15 +325,30 @@ const UserDashboard = ({ user }) => {
                         </span>
                       </div>
                       <div style={styles.statItem}>
-                        <span style={styles.statLabel}>Time In</span>
+                        <span style={styles.statLabel}>Started</span>
                         <span style={styles.statValue}>
-                          {subscription.start_date ? new Date(subscription.start_date).toLocaleString() : 'N/A'}
+                          {formatToGMT3(subscription.start_date)} EAT
                         </span>
                       </div>
                       <div style={styles.statItem}>
-                        <span style={styles.statLabel}>Time Expected Out</span>
+                        <span style={styles.statLabel}>
+                          {subscription.status === 'active' ? 'Expires' : 'Ended'}
+                        </span>
                         <span style={styles.statValue}>
-                          {subscription.end_date ? new Date(subscription.end_date).toLocaleString() : 'N/A'}
+                          {formatToGMT3(subscription.end_date)} EAT
+                        </span>
+                      </div>
+                      <div style={styles.statItem}>
+                        <span style={styles.statLabel}>Duration</span>
+                        <span style={styles.statValue}>
+                          {subscription.start_date && subscription.end_date ? (() => {
+                            const start = new Date(subscription.start_date);
+                            const end = new Date(subscription.end_date);
+                            const duration = end - start;
+                            const hours = Math.floor(duration / (1000 * 60 * 60));
+                            const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+                            return `${hours}h ${minutes}m`;
+                          })() : 'N/A'}
                         </span>
                       </div>
                     </div>
@@ -231,14 +383,86 @@ const UserDashboard = ({ user }) => {
                   <p><strong>Total Earned:</strong> {loyalty.points_earned || 0} points</p>
                   <p><strong>Available Balance:</strong> {loyalty.balance || 0} points</p>
                   <p><strong>Redeemed:</strong> {loyalty.points_redeemed || 0} points</p>
-                  <button
-                    onClick={handleRedeemPoints}
-                    className="btn-primary"
-                    disabled={!loyalty.balance || loyalty.balance === 0}
-                    style={{marginTop: '1rem'}}
-                  >
-                    Redeem Points
-                  </button>
+
+                  <div style={{
+                    marginTop: '1.5rem',
+                    padding: '1rem',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(99, 102, 241, 0.3)'
+                  }}>
+                    <h4 style={{marginBottom: '0.5rem', color: '#818cf8'}}>Redeem Points for Packages</h4>
+                    <p style={{fontSize: '0.875rem', color: '#cbd5e1', marginBottom: '1rem'}}>
+                      💡 Earn 10 points per KSH spent • Redeem at 70 points per KSH
+                    </p>
+
+                    <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#f1f5f9'}}>
+                      Select Package:
+                    </label>
+                    <select
+                      value={selectedRedeemTier}
+                      onChange={(e) => setSelectedRedeemTier(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        marginBottom: '1rem',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(99, 102, 241, 0.3)',
+                        backgroundColor: '#334155',
+                        color: '#f1f5f9'
+                      }}
+                    >
+                      <option value="">-- Select a package --</option>
+                      {tiers.map(tier => {
+                        const pointsRequired = tier.price * 70;
+                        const canAfford = loyalty.balance >= pointsRequired;
+                        return (
+                          <option key={tier.id} value={tier.id}>
+                            {tier.name} - {tier.price} KSH ({pointsRequired} points) {!canAfford ? '❌ Insufficient points' : '✅'}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedRedeemTier && (
+                      <div style={{
+                        marginBottom: '1rem',
+                        padding: '0.75rem',
+                        backgroundColor: 'rgba(51, 65, 85, 0.5)',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
+                      }}>
+                        {(() => {
+                          const tier = tiers.find(t => t.id === parseInt(selectedRedeemTier));
+                          if (!tier) return null;
+                          const pointsRequired = tier.price * 70;
+                          const canAfford = loyalty.balance >= pointsRequired;
+                          return (
+                            <>
+                              <p style={{margin: '0.25rem 0', color: '#f1f5f9'}}><strong>Package:</strong> {tier.name}</p>
+                              <p style={{margin: '0.25rem 0', color: '#f1f5f9'}}><strong>Price:</strong> {tier.price} KSH</p>
+                              <p style={{margin: '0.25rem 0', color: '#f1f5f9'}}><strong>Points Required:</strong> {pointsRequired}</p>
+                              <p style={{margin: '0.25rem 0', color: '#f1f5f9'}}><strong>Your Balance:</strong> {loyalty.balance}</p>
+                              {canAfford ? (
+                                <p style={{margin: '0.25rem 0', color: '#10b981'}}><strong>After Redemption:</strong> {loyalty.balance - pointsRequired} points</p>
+                              ) : (
+                                <p style={{margin: '0.25rem 0', color: '#ef4444'}}><strong>Need:</strong> {pointsRequired - loyalty.balance} more points</p>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => handleRedeemPoints(selectedRedeemTier)}
+                      className="btn-primary"
+                      disabled={!selectedRedeemTier || !loyalty.balance || loyalty.balance === 0}
+                      style={{width: '100%'}}
+                    >
+                      Redeem Package
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -249,16 +473,7 @@ const UserDashboard = ({ user }) => {
         {activeTab === 'feedback' && (
           <div style={styles.tabContent}>
             <h2>Feedback & Complaints</h2>
-            <div className="grid grid-cols-2" style={styles.gridSection}>
-              <div className="card">
-                <h3>Submit Feedback</h3>
-                <FeedbackForm userId={user.id} tiers={tiers} />
-              </div>
-              <div className="card">
-                <h3>File a Complaint</h3>
-                <ComplaintForm userId={user.id} />
-              </div>
-            </div>
+            <FeedbackForm userId={user.id} notifications={notifications} subscriptionType="hotspot" />
           </div>
         )}
       </div>
@@ -279,6 +494,37 @@ const styles = {
     justifyContent: 'center',
     minHeight: '50vh',
     gap: '1rem',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '3rem',
+  },
+  iconContainer: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+    marginBottom: '1.5rem',
+  },
+  icon: {
+    width: '40px',
+    height: '40px',
+    color: '#fff',
+  },
+  heading: {
+    fontSize: '2.5rem',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    marginBottom: '0.5rem',
+  },
+  subHeading: {
+    fontSize: '1.125rem',
+    color: '#94a3b8',
   },
   title: {
     fontSize: '2.5rem',

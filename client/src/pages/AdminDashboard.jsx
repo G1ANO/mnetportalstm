@@ -2,14 +2,32 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import "../index.css"
 
+// GMT+3 datetime formatter
+const formatToGMT3 = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleString('en-KE', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }) + ' EAT';
+};
+
 const AdminDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('tiers');
   const [tiers, setTiers] = useState([]);
   const [users, setUsers] = useState([]);
   const [loyaltyRecords, setLoyaltyRecords] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
+  const [hotspotFeedbacks, setHotspotFeedbacks] = useState([]);
+  const [homeInternetFeedbacks, setHomeInternetFeedbacks] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackSubTab, setFeedbackSubTab] = useState('hotspot'); // 'hotspot' or 'home_internet'
 
   // Tier form state
   const [showTierForm, setShowTierForm] = useState(false);
@@ -43,7 +61,8 @@ const AdminDashboard = ({ user }) => {
         fetchTiers(),
         fetchUsers(),
         fetchLoyaltyRecords(),
-        fetchFeedbacks(),
+        fetchHotspotFeedbacks(),
+        fetchHomeInternetFeedbacks(),
         fetchComplaints()
       ]);
     } catch (err) {
@@ -81,12 +100,21 @@ const AdminDashboard = ({ user }) => {
     }
   };
 
-  const fetchFeedbacks = async () => {
+  const fetchHotspotFeedbacks = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/feedbacks');
-      setFeedbacks(res.data);
+      const res = await axios.get(`http://localhost:5000/feedbacks?user_id=${user.id}&subscription_type=hotspot`);
+      setHotspotFeedbacks(res.data);
     } catch(err) {
-      console.error("Error fetching feedbacks:", err);
+      console.error("Error fetching hotspot feedbacks:", err);
+    }
+  };
+
+  const fetchHomeInternetFeedbacks = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/feedbacks?user_id=${user.id}&subscription_type=home_internet`);
+      setHomeInternetFeedbacks(res.data);
+    } catch(err) {
+      console.error("Error fetching home internet feedbacks:", err);
     }
   };
 
@@ -182,7 +210,9 @@ const AdminDashboard = ({ user }) => {
         admin_id: user.id
       });
       alert('Response sent successfully!');
-      fetchFeedbacks();
+      // Refresh both feedback lists
+      fetchHotspotFeedbacks();
+      fetchHomeInternetFeedbacks();
     } catch (err) {
       alert('Error sending response: ' + err.message);
     }
@@ -492,69 +522,168 @@ const AdminDashboard = ({ user }) => {
           <div style={styles.tabContent}>
             <h2>Feedback & Complaints</h2>
 
-            {/* Ratings Section */}
-            <div className="card" style={{marginBottom: '2rem'}}>
-              <h3>Service Ratings</h3>
-              <div style={styles.tableContainer}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>User ID</th>
-                      <th>Tier</th>
-                      <th>Rating</th>
-                      <th>Comment</th>
-                      <th>Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {feedbacks.length === 0 ? (
-                      <tr><td colSpan="6" style={{textAlign: 'center'}}>No feedback yet</td></tr>
-                    ) : (
-                      feedbacks.map((f) => (
-                        <tr key={f.id}>
-                          <td>{f.user_id}</td>
-                          <td>{f.tier_id}</td>
-                          <td>
-                            <span style={{color: '#f59e0b'}}>
-                              {'⭐'.repeat(f.rating)}
-                            </span>
-                          </td>
-                          <td>{f.comment || 'No comment'}</td>
-                          <td>{f.created_at ? new Date(f.created_at).toLocaleDateString() : 'N/A'}</td>
-                          <td>
-                            <button onClick={() => replyToFeedback(f.id)} className="btn-sm btn-primary">
-                              Reply
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            {/* Sub-tabs for Hotspot and Home Internet */}
+            <div style={{display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #334155'}}>
+              <button
+                onClick={() => setFeedbackSubTab('hotspot')}
+                style={{
+                  ...styles.subTab,
+                  ...(feedbackSubTab === 'hotspot' ? styles.activeSubTab : {})
+                }}
+              >
+                📡 Hotspot Feedback
+              </button>
+              <button
+                onClick={() => setFeedbackSubTab('home_internet')}
+                style={{
+                  ...styles.subTab,
+                  ...(feedbackSubTab === 'home_internet' ? styles.activeSubTab : {})
+                }}
+              >
+                🏠 Home Internet Feedback
+              </button>
             </div>
 
-            {/* Complaints Section */}
-            <div className="card">
-              <h3>User Complaints</h3>
-              <div style={styles.tableContainer}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Subject</th>
-                      <th>Description</th>
-                      <th>User ID</th>
-                      <th>Status</th>
-                      <th>Response</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {complaints.length === 0 ? (
-                      <tr><td colSpan="6" style={{textAlign: 'center'}}>No complaints</td></tr>
-                    ) : (
-                      complaints.map((c) => (
+            {/* Hotspot Feedback Section */}
+            {feedbackSubTab === 'hotspot' && (
+              <div className="card" style={{marginBottom: '2rem'}}>
+                <h3>Hotspot User Feedback & Complaints</h3>
+                <div style={styles.tableContainer}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>User ID</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Status</th>
+                        <th>Admin Response</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hotspotFeedbacks.length === 0 ? (
+                        <tr><td colSpan="9" style={{textAlign: 'center'}}>No hotspot feedback or complaints yet</td></tr>
+                      ) : (
+                        hotspotFeedbacks.map((f) => (
+                          <tr key={f.id}>
+                            <td>{f.user_id}</td>
+                            <td>
+                              <span className={`badge ${f.type === 'feedback' ? 'badge-info' : 'badge-warning'}`}>
+                                {f.type}
+                              </span>
+                            </td>
+                            <td>{f.subject || '-'}</td>
+                            <td>
+                              {f.rating ? (
+                                <span style={{color: '#f59e0b'}}>
+                                  {'⭐'.repeat(f.rating)}
+                                </span>
+                              ) : '-'}
+                            </td>
+                            <td>{f.comment || 'No comment'}</td>
+                            <td>
+                              <span className={`badge ${f.status === 'resolved' ? 'badge-success' : 'badge-warning'}`}>
+                                {f.status}
+                              </span>
+                            </td>
+                            <td>{f.admin_response || 'No response yet'}</td>
+                            <td>{formatToGMT3(f.created_at)}</td>
+                            <td>
+                              <button onClick={() => replyToFeedback(f.id)} className="btn-sm btn-primary">
+                                Reply
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Home Internet Feedback Section */}
+            {feedbackSubTab === 'home_internet' && (
+              <div className="card" style={{marginBottom: '2rem'}}>
+                <h3>Home Internet User Feedback & Complaints</h3>
+                <div style={styles.tableContainer}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>User ID</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Status</th>
+                        <th>Admin Response</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {homeInternetFeedbacks.length === 0 ? (
+                        <tr><td colSpan="9" style={{textAlign: 'center'}}>No home internet feedback or complaints yet</td></tr>
+                      ) : (
+                        homeInternetFeedbacks.map((f) => (
+                          <tr key={f.id}>
+                            <td>{f.user_id}</td>
+                            <td>
+                              <span className={`badge ${f.type === 'feedback' ? 'badge-info' : 'badge-warning'}`}>
+                                {f.type}
+                              </span>
+                            </td>
+                            <td>{f.subject || '-'}</td>
+                            <td>
+                              {f.rating ? (
+                                <span style={{color: '#f59e0b'}}>
+                                  {'⭐'.repeat(f.rating)}
+                                </span>
+                              ) : '-'}
+                            </td>
+                            <td>{f.comment || 'No comment'}</td>
+                            <td>
+                              <span className={`badge ${f.status === 'resolved' ? 'badge-success' : 'badge-warning'}`}>
+                                {f.status}
+                              </span>
+                            </td>
+                            <td>{f.admin_response || 'No response yet'}</td>
+                            <td>{formatToGMT3(f.created_at)}</td>
+                            <td>
+                              <button onClick={() => replyToFeedback(f.id)} className="btn-sm btn-primary">
+                                Reply
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Legacy Complaints Section (if any exist in old Complaint table) */}
+            {complaints.length > 0 && (
+              <div className="card">
+                <h3>Legacy Complaints (Old System)</h3>
+                <div style={styles.tableContainer}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Subject</th>
+                        <th>Description</th>
+                        <th>User ID</th>
+                        <th>Status</th>
+                        <th>Response</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {complaints.map((c) => (
                         <tr key={c.id}>
                           <td>{c.subject}</td>
                           <td>{c.description}</td>
@@ -571,12 +700,12 @@ const AdminDashboard = ({ user }) => {
                             </button>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -606,9 +735,11 @@ const AdminDashboard = ({ user }) => {
                       value={commForm.channel}
                       onChange={(e) => setCommForm({...commForm, channel: e.target.value})}
                     >
+                      <option value="notification">In-App Notification</option>
                       <option value="email">Email</option>
                       <option value="sms">SMS</option>
-                      <option value="both">Both (Email & SMS)</option>
+                      <option value="both">Email & SMS</option>
+                      <option value="all">All Channels (Notification + Email + SMS)</option>
                     </select>
                   </div>
                   <div>
@@ -728,6 +859,21 @@ const styles = {
   },
   tableContainer: {
     overflowX: 'auto',
+  },
+  subTab: {
+    padding: '0.75rem 1.5rem',
+    background: 'transparent',
+    border: 'none',
+    color: '#94a3b8',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    borderBottom: '2px solid transparent',
+    transition: 'all 0.2s',
+  },
+  activeSubTab: {
+    color: '#6366f1',
+    borderBottom: '2px solid #6366f1',
   },
 };
 

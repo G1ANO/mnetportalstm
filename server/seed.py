@@ -1,6 +1,6 @@
 from app import app, db
 from models import User, SubscriptionTier, Payment, Subscription, Feedback, Complaint, LoyaltyPoint, Redemption, Notification, UsagePattern, AdminActionLog
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 with app.app_context():
     db.drop_all()
@@ -34,6 +34,15 @@ with app.app_context():
     )
     user2.set_password("password123")
 
+    user3 = User(
+        name="Alice Johnson",
+        email="alice@example.com",
+        phone_number="0723456789",
+        role="user",
+        status="active"
+    )
+    user3.set_password("password123")
+
     weekly = SubscriptionTier(
         name="Weekly Plan",
         price=3.00,
@@ -61,7 +70,7 @@ with app.app_context():
         description="High-speed WiFi for 2 months"
     )
 
-    db.session.add_all([admin, user1, user2, weekly, monthly, premium])
+    db.session.add_all([admin, user1, user2, user3, weekly, monthly, premium])
     db.session.commit()
 
     payment1 = Payment(
@@ -83,40 +92,64 @@ with app.app_context():
     db.session.add_all([payment1, payment2])
     db.session.commit()
 
-    
+
     sub1 = Subscription(
         user=user1,
         tier=weekly,
-        start_date=datetime.utcnow(),
-        end_date=datetime.utcnow() + timedelta(days=7),
+        start_date=datetime.now(timezone.utc),
+        end_date=datetime.now(timezone.utc) + timedelta(days=7),
         status="active",
-        
+
     )
 
     sub2 = Subscription(
         user=user2,
         tier=monthly,
-        start_date=datetime.utcnow(),
-        end_date=datetime.utcnow() + timedelta(days=30),
+        start_date=datetime.now(timezone.utc),
+        end_date=datetime.now(timezone.utc) + timedelta(days=30),
         status="active",
-        
+
     )
 
     db.session.add_all([sub1, sub2])
     db.session.commit()
 
     feedback1 = Feedback(
-        user=user1,
-        tier=weekly,
+        user_id=user1.id,
+        type='feedback',
+        subscription_type='hotspot',
         rating=5,
-        comment="Fast and reliable WiFi! Very satisfied."
+        comment="Fast and reliable WiFi! Very satisfied.",
+        status='pending'
     )
 
     feedback2 = Feedback(
-        user=user2,
-        tier=monthly,
+        user_id=user2.id,
+        type='feedback',
+        subscription_type='hotspot',
         rating=4,
-        comment="Good performance, but a bit slow during peak hours."
+        comment="Good performance, but a bit slow during peak hours.",
+        status='pending'
+    )
+
+    feedback3 = Feedback(
+        user_id=user3.id,
+        type='complaint',
+        subscription_type='home_internet',
+        subject="Slow speeds at night",
+        rating=2,
+        comment="Internet is very slow during evening hours.",
+        status='pending'
+    )
+
+    feedback4 = Feedback(
+        user_id=user1.id,
+        type='feedback',
+        subscription_type='home_internet',
+        rating=5,
+        comment="Excellent home internet service! Very stable.",
+        status='resolved',
+        admin_response="Thank you for your positive feedback!"
     )
 
     complaint1 = Complaint(
@@ -134,7 +167,7 @@ with app.app_context():
         status="pending"
     )
 
-    db.session.add_all([feedback1, feedback2, complaint1, complaint2])
+    db.session.add_all([feedback1, feedback2, feedback3, feedback4, complaint1, complaint2])
     db.session.commit()
 
     lp1 = LoyaltyPoint(user=user1, points_earned=50, points_redeemed=10, balance=40)
@@ -157,7 +190,7 @@ with app.app_context():
     notif1 = Notification(
         user=user1,
         message="Your Weekly Plan will expire in 2 days.",
-        channel="email",
+        channel="notification",
         type="reminder",
         status="unread"
     )
@@ -165,9 +198,25 @@ with app.app_context():
     notif2 = Notification(
         user=user2,
         message="Get 10% off on next month’s plan!",
-        channel="sms",
-        type="promotion",
-        status="sent"
+        channel="notification",
+        type="promo",
+        status="unread"
+    )
+
+    notif3 = Notification(
+        user=user1,
+        message="Welcome to Mnet WiFi Portal! Thank you for choosing us for your internet needs.",
+        channel="notification",
+        type="info",
+        status="unread"
+    )
+
+    notif4 = Notification(
+        user=user3,
+        message="Special offer: Subscribe to any plan today and get 100 bonus loyalty points!",
+        channel="notification",
+        type="promo",
+        status="unread"
     )
 
     
@@ -195,7 +244,7 @@ with app.app_context():
         details="User violated fair usage policy."
     )
 
-    db.session.add_all([notif1, notif2, usage1, usage2, log1])
+    db.session.add_all([notif1, notif2, notif3, notif4, usage1, usage2, log1])
     db.session.commit()
     print(" Database seeded successfully with sample data!")
     
