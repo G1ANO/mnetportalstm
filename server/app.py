@@ -348,6 +348,13 @@ def create_subscription():
 
     tier = SubscriptionTier.query.get_or_404(tier_id)
 
+    # Mark all existing active subscriptions for this user and tier type as expired
+    existing_subscriptions = Subscription.query.filter_by(user_id=user_id, status='active').all()
+    for sub in existing_subscriptions:
+        existing_tier = SubscriptionTier.query.get(sub.tier_id)
+        if existing_tier and existing_tier.tier_type == tier.tier_type:
+            sub.status = 'expired'
+
     # Calculate end date based on duration_days
     from datetime import datetime, timedelta
     start_date = datetime.utcnow()
@@ -377,10 +384,18 @@ def create_subscription():
 @app.route('/subscriptions', methods=['GET'])
 def get_subscriptions():
     """Get user subscriptions."""
+    from datetime import datetime
     user_id = request.args.get('user_id')
     tier_type = request.args.get('type')  # Optional filter: 'hotspot' or 'home_internet'
 
-    subscriptions = Subscription.query.filter_by(user_id=user_id).all()
+    subscriptions = Subscription.query.filter_by(user_id=user_id).order_by(Subscription.start_date.desc()).all()
+
+    # Auto-update expired subscriptions
+    now = datetime.utcnow()
+    for s in subscriptions:
+        if s.status == 'active' and s.end_date and s.end_date < now:
+            s.status = 'expired'
+    db.session.commit()
 
     result = []
     for s in subscriptions:

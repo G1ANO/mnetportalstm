@@ -6,7 +6,7 @@ import "../index.css";
 
 const UserDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('plans');
-  const [subscription, setSubscription] = useState(null);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [tiers, setTiers] = useState([]);
   const [loyalty, setLoyalty] = useState({ points_earned: 0, balance: 0 });
   const [loading, setLoading] = useState(true);
@@ -33,9 +33,10 @@ const UserDashboard = ({ user }) => {
 
   const fetchSubscription = async () => {
     try {
-      // Only fetch hotspot subscriptions
+      // Fetch all hotspot subscriptions (ordered by date, most recent first)
       const res = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}&type=hotspot`);
-      if (res.data.length > 0) setSubscription(res.data[0]);
+      // Keep up to 3 most recent subscriptions for history
+      setSubscriptions(res.data.slice(0, 3));
     } catch (err) {
       console.error("Error fetching subscription:", err);
     }
@@ -167,37 +168,44 @@ const UserDashboard = ({ user }) => {
         {/* My Plan Tab */}
         {activeTab === 'myplan' && (
           <div style={styles.tabContent}>
-            <h2>My Subscription Details</h2>
-            {subscription ? (
-              <div className="card">
-                <div style={styles.subscriptionGrid}>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Plan Type</span>
-                    <span style={styles.statValue}>{subscription.tier_name || 'N/A'}</span>
+            <h2>My Subscription History</h2>
+            {subscriptions.length > 0 ? (
+              <div style={styles.subscriptionHistory}>
+                {subscriptions.map((subscription, index) => (
+                  <div key={subscription.id} className="card" style={index === 0 && subscription.status === 'active' ? styles.activeSubscriptionCard : {}}>
+                    {index === 0 && subscription.status === 'active' && (
+                      <div style={styles.currentBadge}>Current Plan</div>
+                    )}
+                    <div style={styles.subscriptionGrid}>
+                      <div style={styles.statItem}>
+                        <span style={styles.statLabel}>Plan Type</span>
+                        <span style={styles.statValue}>{subscription.tier_name || 'N/A'}</span>
+                      </div>
+                      <div style={styles.statItem}>
+                        <span style={styles.statLabel}>Status</span>
+                        <span className={`badge ${subscription.status === 'active' ? 'badge-success' : 'badge-warning'}`}>
+                          {subscription.status}
+                        </span>
+                      </div>
+                      <div style={styles.statItem}>
+                        <span style={styles.statLabel}>Time In</span>
+                        <span style={styles.statValue}>
+                          {subscription.start_date ? new Date(subscription.start_date).toLocaleString() : 'N/A'}
+                        </span>
+                      </div>
+                      <div style={styles.statItem}>
+                        <span style={styles.statLabel}>Time Expected Out</span>
+                        <span style={styles.statValue}>
+                          {subscription.end_date ? new Date(subscription.end_date).toLocaleString() : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Status</span>
-                    <span className={`badge ${subscription.status === 'active' ? 'badge-success' : 'badge-warning'}`}>
-                      {subscription.status}
-                    </span>
-                  </div>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Time In</span>
-                    <span style={styles.statValue}>
-                      {subscription.start_date ? new Date(subscription.start_date).toLocaleString() : 'N/A'}
-                    </span>
-                  </div>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Time Expected Out</span>
-                    <span style={styles.statValue}>
-                      {subscription.end_date ? new Date(subscription.end_date).toLocaleString() : 'N/A'}
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
             ) : (
               <div className="alert alert-info">
-                <p>You currently have no active subscription.</p>
+                <p>You currently have no subscription history.</p>
                 <button onClick={() => setActiveTab('plans')} className="btn-primary" style={{marginTop: '1rem'}}>
                   View Available Plans
                 </button>
@@ -341,6 +349,28 @@ const styles = {
     marginTop: '0.5rem',
     color: '#94a3b8',
     fontSize: '0.875rem',
+  },
+  subscriptionHistory: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+    marginTop: '1.5rem',
+  },
+  activeSubscriptionCard: {
+    border: '2px solid #10b981',
+    position: 'relative',
+  },
+  currentBadge: {
+    position: 'absolute',
+    top: '-12px',
+    right: '20px',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    color: '#fff',
+    padding: '0.25rem 1rem',
+    borderRadius: '9999px',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    boxShadow: '0 4px 6px rgba(16, 185, 129, 0.3)',
   },
   subscriptionGrid: {
     display: 'grid',
