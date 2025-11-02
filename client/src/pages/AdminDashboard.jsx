@@ -483,31 +483,33 @@ const AdminDashboard = ({ user }) => {
         {/* Loyalty Program Tab */}
         {activeTab === 'loyalty' && (
           <div style={styles.tabContent}>
-            <h2>Loyalty Program Records</h2>
-            <div style={styles.tableContainer}>
-              <table className="data-table">
+            <h2>Loyalty Program Overview</h2>
+            <div className="card" style={{marginTop: '1rem'}}>
+              <table style={styles.table}>
                 <thead>
                   <tr>
                     <th>User ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Device ID</th>
                     <th>Points Earned</th>
+                    <th>Points Redeemed</th>
+                    <th>Balance Points</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loyaltyRecords.length === 0 ? (
-                    <tr><td colSpan="6" style={{textAlign: 'center'}}>No loyalty records found</td></tr>
+                    <tr><td colSpan="7" style={{textAlign: 'center'}}>No loyalty records found</td></tr>
                   ) : (
                     loyaltyRecords.map((record) => (
-                      <tr key={record.user_id}>
+                      <tr key={record.id}>
                         <td>{record.user_id}</td>
                         <td>{record.user_name || 'N/A'}</td>
                         <td>{record.user_email || 'N/A'}</td>
                         <td>{record.phone_number || 'N/A'}</td>
-                        <td>{record.device_id || 'N/A'}</td>
-                        <td><strong>{record.points_earned || 0}</strong> points</td>
+                        <td>{record.points_earned || 0}</td>
+                        <td>{record.points_redeemed || 0}</td>
+                        <td><strong style={{color: '#10b981'}}>{record.balance || 0}</strong></td>
                       </tr>
                     ))
                   )}

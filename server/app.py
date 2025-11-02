@@ -40,7 +40,16 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    return jsonify({
+        "message": "User registered successfully",
+        "user_id": user.id,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role
+        }
+    }), 201
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -379,12 +388,15 @@ def get_all_loyalty():
     for lp in loyalty_records:
         user = User.query.get(lp.user_id)
         result.append({
+            "id": lp.id,
             "user_id": lp.user_id,
             "user_name": user.name if user else None,
             "user_email": user.email if user else None,
             "phone_number": user.phone_number if user else None,
             "device_id": getattr(user, 'device_id', None) if user else None,
-            "points_earned": lp.points_earned
+            "points_earned": lp.points_earned,
+            "points_redeemed": lp.points_redeemed,
+            "balance": lp.balance
         })
     return jsonify(result), 200
 

@@ -21,6 +21,15 @@ const HomeInternetPanel = ({ user }) => {
     tier_type: 'home_internet'
   });
 
+  // Add subscriber form state
+  const [showAddSubscriberForm, setShowAddSubscriberForm] = useState(false);
+  const [subscriberForm, setSubscriberForm] = useState({
+    name: '',
+    email: '',
+    phone_number: '',
+    tier_id: ''
+  });
+
   useEffect(() => {
     if (user && user.id) {
       fetchData();
@@ -55,7 +64,13 @@ const HomeInternetPanel = ({ user }) => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get('http://localhost:5000/users');
-      setUsers(res.data);
+      // Filter to only show users with active home_internet subscriptions
+      const homeInternetSubscribers = res.data.filter(user => {
+        return user.subscriptions && user.subscriptions.some(sub =>
+          sub.tier && sub.tier.tier_type === 'home_internet' && sub.status === 'active'
+        );
+      });
+      setUsers(homeInternetSubscribers);
     } catch(err) {
       console.error("Error fetching users:", err);
     }
@@ -100,7 +115,37 @@ const HomeInternetPanel = ({ user }) => {
     }
   };
 
+  const handleAddSubscriber = async (e) => {
+    e.preventDefault();
+    if (!subscriberForm.name || !subscriberForm.email || !subscriberForm.phone_number || !subscriberForm.tier_id) {
+      alert('Please fill in all fields');
+      return;
+    }
+    try {
+      // First, register the user
+      const registerRes = await axios.post('http://localhost:5000/register', {
+        name: subscriberForm.name,
+        email: subscriberForm.email,
+        phone_number: subscriberForm.phone_number,
+        password: Math.random().toString(36).slice(-8) // Generate random password
+      });
 
+      const newUserId = registerRes.data.user_id || registerRes.data.id;
+
+      // Then, create a subscription for them
+      await axios.post('http://localhost:5000/subscriptions', {
+        user_id: newUserId,
+        tier_id: parseInt(subscriberForm.tier_id)
+      });
+
+      alert('✅ Home Internet subscriber added successfully!');
+      setShowAddSubscriberForm(false);
+      setSubscriberForm({ name: '', email: '', phone_number: '', tier_id: '' });
+      fetchUsers();
+    } catch (err) {
+      alert('Error adding subscriber: ' + (err.response?.data?.error || err.message));
+    }
+  };
 
   const handleCreateTier = async (e) => {
     e.preventDefault();
@@ -362,7 +407,90 @@ const HomeInternetPanel = ({ user }) => {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div style={styles.tabContent}>
-            <h2>Home Internet Subscribers</h2>
+            <div style={styles.sectionHeader}>
+              <h2>Home Internet Subscribers</h2>
+              <button
+                onClick={() => setShowAddSubscriberForm(!showAddSubscriberForm)}
+                className="btn-primary"
+              >
+                {showAddSubscriberForm ? 'Cancel' : '+ Add Subscriber'}
+              </button>
+            </div>
+
+            {showAddSubscriberForm && (
+              <div className="card" style={styles.formCard}>
+                <h3>Add Home Internet Subscriber</h3>
+                <form onSubmit={handleAddSubscriber} style={styles.form}>
+                  <div style={styles.formGrid}>
+                    <div>
+                      <label className="form-label">Full Name *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={subscriberForm.name}
+                        onChange={(e) => setSubscriberForm({...subscriberForm, name: e.target.value})}
+                        placeholder="e.g., John Doe"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Email *</label>
+                      <input
+                        type="email"
+                        className="form-input"
+                        value={subscriberForm.email}
+                        onChange={(e) => setSubscriberForm({...subscriberForm, email: e.target.value})}
+                        placeholder="e.g., john@example.com"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Phone Number *</label>
+                      <input
+                        type="tel"
+                        className="form-input"
+                        value={subscriberForm.phone_number}
+                        onChange={(e) => setSubscriberForm({...subscriberForm, phone_number: e.target.value})}
+                        placeholder="e.g., 0700000000"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Select Plan *</label>
+                      <select
+                        className="form-input"
+                        value={subscriberForm.tier_id}
+                        onChange={(e) => setSubscriberForm({...subscriberForm, tier_id: e.target.value})}
+                        required
+                      >
+                        <option value="">-- Select a plan --</option>
+                        {tiers.map(tier => (
+                          <option key={tier.id} value={tier.id}>
+                            {tier.name} - KSH {tier.price}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={styles.formActions}>
+                    <button type="submit" className="btn-primary">
+                      Add Subscriber
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        setShowAddSubscriberForm(false);
+                        setSubscriberForm({ name: '', email: '', phone_number: '', tier_id: '' });
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             <div className="card" style={{marginTop: '1rem'}}>
               <table style={styles.table}>
                 <thead>

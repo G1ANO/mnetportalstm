@@ -213,10 +213,10 @@ function App() {
 
       {/* Page Content */}
       <div style={styles.content}>
-        {currentPage === 'home' && <HomePage user={{...user, id: 1}} onLogout={handleLogout} />}
-        {currentPage === 'dashboard' && !user.isAdmin && <UserDashboard user={{...user, id: 1}} />}
-        {currentPage === 'dashboard' && user.isAdmin && <AdminDashboard user={{...user, id: 1}} />}
-        {currentPage === 'homeInternetPanel' && user.isAdmin && <HomeInternetPanel user={{...user, id: 1}} />}
+        {currentPage === 'home' && <HomePage user={user} onLogout={handleLogout} />}
+        {currentPage === 'dashboard' && !user.isAdmin && <UserDashboard user={user} />}
+        {currentPage === 'dashboard' && user.isAdmin && <AdminDashboard user={user} />}
+        {currentPage === 'homeInternetPanel' && user.isAdmin && <HomeInternetPanel user={user} />}
       </div>
     </div>
   );
