@@ -28,6 +28,7 @@ const AdminDashboard = ({ user }) => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedbackSubTab, setFeedbackSubTab] = useState('hotspot'); // 'hotspot' or 'home_internet'
+  const [tierAnalytics, setTierAnalytics] = useState([]);
 
   // Tier form state
   const [showTierForm, setShowTierForm] = useState(false);
@@ -63,7 +64,8 @@ const AdminDashboard = ({ user }) => {
         fetchLoyaltyRecords(),
         fetchHotspotFeedbacks(),
         fetchHomeInternetFeedbacks(),
-        fetchComplaints()
+        fetchComplaints(),
+        fetchTierAnalytics()
       ]);
     } catch (err) {
       console.error("Error loading admin data:", err);
@@ -124,6 +126,15 @@ const AdminDashboard = ({ user }) => {
       setComplaints(res.data);
     } catch (err) {
       console.error("Error fetching complaints:", err);
+    }
+  };
+
+  const fetchTierAnalytics = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/analytics/tier-subscriptions?type=hotspot');
+      setTierAnalytics(res.data);
+    } catch(err) {
+      console.error("Error fetching tier analytics:", err);
     }
   };
 
@@ -296,6 +307,12 @@ const AdminDashboard = ({ user }) => {
             style={{...styles.tab, ...(activeTab === 'communication' ? styles.activeTab : {})}}
           >
             Communications
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            style={{...styles.tab, ...(activeTab === 'analytics' ? styles.activeTab : {})}}
+          >
+            Analytics
           </button>
         </div>
 
@@ -772,6 +789,198 @@ const AdminDashboard = ({ user }) => {
                   Send Message
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div style={styles.tabContent}>
+            <h2>Hotspot Tier Analytics</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>View subscription trends across different hotspot tiers</p>
+
+            <div className="card" style={{ marginBottom: '2rem' }}>
+              <h3 style={{ marginBottom: '2rem' }}>Subscribers by Tier</h3>
+
+              {tierAnalytics.length === 0 ? (
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>No tier data available</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Bar Chart */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-around',
+                    height: '400px',
+                    padding: '2rem 1rem',
+                    backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(71, 85, 105, 0.5)',
+                    gap: '1rem'
+                  }}>
+                    {tierAnalytics.map((tier) => {
+                      // Scale to 1-10 range
+                      const maxSubscribers = Math.max(...tierAnalytics.map(t => t.active_subscribers), 10);
+                      const scaledHeight = (tier.active_subscribers / maxSubscribers) * 100;
+                      const barHeight = Math.max(scaledHeight, 5); // Minimum 5% height for visibility
+
+                      return (
+                        <div key={tier.tier_id} style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          flex: 1,
+                          gap: '0.5rem'
+                        }}>
+                          {/* Bar */}
+                          <div style={{
+                            width: '100%',
+                            height: `${barHeight}%`,
+                            backgroundColor: '#6366f1',
+                            borderRadius: '4px 4px 0 0',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            minHeight: '20px'
+                          }} title={`${tier.tier_name}: ${tier.active_subscribers} active subscribers`}>
+                            {/* Subscriber count label on bar */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '-25px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              color: '#f1f5f9',
+                              fontWeight: 'bold',
+                              fontSize: '0.9rem',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {tier.active_subscribers}
+                            </div>
+                          </div>
+
+                          {/* Tier name label */}
+                          <div style={{
+                            textAlign: 'center',
+                            fontSize: '0.85rem',
+                            color: '#cbd5e1',
+                            fontWeight: '500',
+                            maxWidth: '100%',
+                            wordWrap: 'break-word'
+                          }}>
+                            {tier.tier_name}
+                          </div>
+
+                          {/* Price label */}
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: '#94a3b8'
+                          }}>
+                            KSH {tier.price}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Statistics Table */}
+                  <div style={styles.tableContainer}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Tier Name</th>
+                          <th>Price (KSH)</th>
+                          <th>Duration (hrs)</th>
+                          <th>Active Subscribers</th>
+                          <th>Total Subscribers</th>
+                          <th>Popularity %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tierAnalytics.map((tier) => {
+                          const totalAllTiers = tierAnalytics.reduce((sum, t) => sum + t.active_subscribers, 0);
+                          const popularityPercent = totalAllTiers > 0 ? ((tier.active_subscribers / totalAllTiers) * 100).toFixed(1) : 0;
+
+                          return (
+                            <tr key={tier.tier_id}>
+                              <td><strong>{tier.tier_name}</strong></td>
+                              <td>{tier.price}</td>
+                              <td>{tier.duration_hours}</td>
+                              <td style={{ color: '#10b981', fontWeight: 'bold' }}>{tier.active_subscribers}</td>
+                              <td>{tier.total_subscribers}</td>
+                              <td>
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem'
+                                }}>
+                                  <div style={{
+                                    width: '60px',
+                                    height: '6px',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                                    borderRadius: '3px',
+                                    overflow: 'hidden'
+                                  }}>
+                                    <div style={{
+                                      width: `${popularityPercent}%`,
+                                      height: '100%',
+                                      backgroundColor: '#6366f1',
+                                      transition: 'width 0.3s ease'
+                                    }} />
+                                  </div>
+                                  <span style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>{popularityPercent}%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Summary Stats */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem'
+                  }}>
+                    <div style={{
+                      padding: '1.5rem',
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(16, 185, 129, 0.3)'
+                    }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Total Active Subscribers</div>
+                      <div style={{ color: '#10b981', fontSize: '2rem', fontWeight: 'bold' }}>
+                        {tierAnalytics.reduce((sum, t) => sum + t.active_subscribers, 0)}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      padding: '1.5rem',
+                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(99, 102, 241, 0.3)'
+                    }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Total All-Time Subscribers</div>
+                      <div style={{ color: '#6366f1', fontSize: '2rem', fontWeight: 'bold' }}>
+                        {tierAnalytics.reduce((sum, t) => sum + t.total_subscribers, 0)}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      padding: '1.5rem',
+                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(245, 158, 11, 0.3)'
+                    }}>
+                      <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Most Popular Tier</div>
+                      <div style={{ color: '#f59e0b', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                        {tierAnalytics.length > 0 && tierAnalytics.reduce((max, t) => t.active_subscribers > max.active_subscribers ? t : max).tier_name}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

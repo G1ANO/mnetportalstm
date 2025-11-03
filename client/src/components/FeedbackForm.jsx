@@ -83,7 +83,6 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
           border: '1px solid rgba(99, 102, 241, 0.3)'
         }}>
           <h3 style={{ color: '#818cf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>📬</span>
             Admin Notifications
           </h3>
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
@@ -121,18 +120,6 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
                   )}
                 </div>
                 <p style={{ margin: 0, color: '#f1f5f9', lineHeight: '1.5', fontSize: '0.95rem' }}>{notif.message}</p>
-                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    color: '#a5b4fc',
-                    padding: '0.125rem 0.5rem',
-                    borderRadius: '4px',
-                    fontWeight: '500'
-                  }}>
-                    {notif.type}
-                  </span>
-                  <span>via {notif.channel}</span>
-                </div>
               </div>
             ))}
           </div>
@@ -280,14 +267,14 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
                     color: item.status === 'resolved' ? '#10b981' : '#fbbf24',
                     border: item.status === 'resolved' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(251, 191, 36, 0.4)'
                   }}>
-                    {item.status === 'resolved' ? '✅ Resolved' : '⏳ Pending'}
+                    {item.status === 'resolved' ? 'Resolved' : 'Pending'}
                   </span>
                 </div>
 
                 {item.admin_response && (
                   <div style={styles.adminResponse}>
                     <div style={styles.adminResponseHeader}>
-                      <strong>📢 Admin Response:</strong>
+                      <strong>Admin Response:</strong>
                       {item.updated_at && (
                         <span style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
                           {formatToGMT3(item.updated_at)} EAT

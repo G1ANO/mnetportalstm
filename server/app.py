@@ -400,6 +400,32 @@ def get_all_loyalty():
         })
     return jsonify(result), 200
 
+@app.route('/analytics/tier-subscriptions', methods=['GET'])
+def get_tier_subscription_analytics():
+    """Get subscription count by tier for analytics (admin only)."""
+    tier_type = request.args.get('type', 'hotspot')  # Default to hotspot
+
+    # Get all tiers of the specified type
+    tiers = SubscriptionTier.query.filter_by(tier_type=tier_type).all()
+
+    result = []
+    for tier in tiers:
+        # Count active subscriptions for this tier
+        active_count = Subscription.query.filter_by(tier_id=tier.id, status='active').count()
+        # Count all subscriptions (including expired) for this tier
+        total_count = Subscription.query.filter_by(tier_id=tier.id).count()
+
+        result.append({
+            "tier_id": tier.id,
+            "tier_name": tier.name,
+            "price": float(tier.price),
+            "active_subscribers": active_count,
+            "total_subscribers": total_count,
+            "duration_hours": tier.duration_days
+        })
+
+    return jsonify(result), 200
+
 @app.route('/feedbacks/<int:feedback_id>/reply', methods=['PATCH'])
 def reply_to_feedback(feedback_id):
     """Admin responds to feedback or complaint."""
