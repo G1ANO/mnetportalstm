@@ -163,10 +163,10 @@ const UserDashboard = ({ user }) => {
         user_id: user.id,
         tier_id: tierId
       });
-      alert('✅ Subscription successful!');
+      alert('Subscription successful!');
       fetchSubscription();
     } catch (err) {
-      alert('❌ Error subscribing: ' + err.message);
+      alert('Error subscribing: ' + err.message);
     }
   };
 
@@ -188,7 +188,7 @@ const UserDashboard = ({ user }) => {
 
     // Check if user has enough points
     if (loyalty.balance < pointsRequired) {
-      alert(`❌ Insufficient points!\n\nRequired: ${pointsRequired} points\nYou have: ${loyalty.balance} points\nYou need ${pointsRequired - loyalty.balance} more points`);
+      alert(`Insufficient points!\n\nRequired: ${pointsRequired} points\nYou have: ${loyalty.balance} points\nYou need ${pointsRequired - loyalty.balance} more points`);
       return;
     }
 
@@ -208,12 +208,12 @@ const UserDashboard = ({ user }) => {
         user_id: user.id,
         tier_id: tierId
       });
-      alert(`✅ ${response.data.message}\n\nPoints Used: ${response.data.points_used}\nRemaining Balance: ${response.data.remaining_balance}`);
+      alert(`${response.data.message}\n\nPoints Used: ${response.data.points_used}\nRemaining Balance: ${response.data.remaining_balance}`);
       fetchLoyalty();
       fetchSubscription();
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.message;
-      alert('❌ Error redeeming points: ' + errorMsg);
+      alert('Error redeeming points: ' + errorMsg);
     }
   };
 
@@ -393,7 +393,7 @@ const UserDashboard = ({ user }) => {
                   }}>
                     <h4 style={{marginBottom: '0.5rem', color: '#818cf8'}}>Redeem Points for Packages</h4>
                     <p style={{fontSize: '0.875rem', color: '#cbd5e1', marginBottom: '1rem'}}>
-                      💡 Earn 10 points per KSH spent • Redeem at 70 points per KSH
+                      Earn 10 points per KSH spent • Redeem at 70 points per KSH
                     </p>
 
                     <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#f1f5f9'}}>
@@ -412,13 +412,13 @@ const UserDashboard = ({ user }) => {
                         color: '#f1f5f9'
                       }}
                     >
-                      <option value="">-- Select a package --</option>
+                      <option value="">Select a package</option>
                       {tiers.map(tier => {
                         const pointsRequired = tier.price * 70;
                         const canAfford = loyalty.balance >= pointsRequired;
                         return (
                           <option key={tier.id} value={tier.id}>
-                            {tier.name} - {tier.price} KSH ({pointsRequired} points) {!canAfford ? '❌ Insufficient points' : '✅'}
+                            {tier.name} - {tier.price} KSH ({pointsRequired} points) {!canAfford ? 'Insufficient points' : 'Eligible'}
                           </option>
                         );
                       })}

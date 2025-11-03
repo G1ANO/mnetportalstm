@@ -37,7 +37,8 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:5000/feedbacks?user_id=${userId}`);
-      setSubmissions(response.data);
+      // Keep only the 3 most recent submissions
+      setSubmissions(response.data.slice(0, 3));
     } catch (error) {
       console.error('Error fetching submissions:', error);
     } finally {
@@ -253,7 +254,7 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
                     ...styles.typeBadge,
                     backgroundColor: item.type === 'feedback' ? '#10b981' : '#f59e0b'
                   }}>
-                    {item.type === 'feedback' ? '💬 Feedback' : '⚠️ Complaint'}
+                    {item.type === 'feedback' ? 'Feedback' : 'Complaint'}
                   </span>
                   <span style={styles.date}>{formatToGMT3(item.created_at)} EAT</span>
                 </div>
@@ -262,7 +263,7 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
                   <h4 style={styles.subject}>{item.subject}</h4>
                 )}
 
-                {item.rating && (
+                {item.type === 'feedback' && item.rating && (
                   <div style={styles.rating}>
                     <strong>Rating:</strong> {'⭐'.repeat(item.rating)} ({item.rating}/5)
                   </div>

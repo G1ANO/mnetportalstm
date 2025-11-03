@@ -572,7 +572,7 @@ export const HomePage = ({ user }) => {
 
                   <div style={{marginTop: '2rem', padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '8px'}}>
                     <p style={{margin: 0, color: '#818cf8', fontSize: '0.95rem', textAlign: 'center'}}>
-                      💡 <strong>Redeem your points on the Hotspot Dashboard</strong> - Visit the Loyalty Program tab to redeem points for packages.
+                      Visit the Loyalty Program tab to redeem points
                     </p>
                   </div>
                 </div>

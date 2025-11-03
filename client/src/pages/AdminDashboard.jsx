@@ -533,7 +533,7 @@ const AdminDashboard = ({ user }) => {
                   ...(feedbackSubTab === 'hotspot' ? styles.activeSubTab : {})
                 }}
               >
-                📡 Hotspot Feedback
+                Hotspot Feedback
               </button>
               <button
                 onClick={() => setFeedbackSubTab('home_internet')}
@@ -542,7 +542,7 @@ const AdminDashboard = ({ user }) => {
                   ...(feedbackSubTab === 'home_internet' ? styles.activeSubTab : {})
                 }}
               >
-                🏠 Home Internet Feedback
+                Home Internet Feedback
               </button>
             </div>
 
@@ -579,11 +579,11 @@ const AdminDashboard = ({ user }) => {
                             </td>
                             <td>{f.subject || '-'}</td>
                             <td>
-                              {f.rating ? (
+                              {f.type === 'complaint' ? '-' : (f.rating ? (
                                 <span style={{color: '#f59e0b'}}>
                                   {'⭐'.repeat(f.rating)}
                                 </span>
-                              ) : '-'}
+                              ) : '-')}
                             </td>
                             <td>{f.comment || 'No comment'}</td>
                             <td>
@@ -640,11 +640,11 @@ const AdminDashboard = ({ user }) => {
                             </td>
                             <td>{f.subject || '-'}</td>
                             <td>
-                              {f.rating ? (
+                              {f.type === 'complaint' ? '-' : (f.rating ? (
                                 <span style={{color: '#f59e0b'}}>
                                   {'⭐'.repeat(f.rating)}
                                 </span>
-                              ) : '-'}
+                              ) : '-')}
                             </td>
                             <td>{f.comment || 'No comment'}</td>
                             <td>
@@ -769,7 +769,7 @@ const AdminDashboard = ({ user }) => {
                   </div>
                 )}
                 <button type="submit" className="btn-primary">
-                  📧 Send Message
+                  Send Message
                 </button>
               </form>
             </div>
