@@ -251,6 +251,17 @@ def reply_complaint(id):
     complaint = Complaint.query.get_or_404(id)
     complaint.admin_response = data.get('admin_response')
     complaint.status = data.get('status', 'resolved')
+
+    # Create notification for the user about the complaint response
+    notification = Notification(
+        user_id=complaint.user_id,
+        message=f"Your complaint '{complaint.subject}' has been addressed by admin.",
+        channel='notification',
+        type='complaint_response',
+        status='unread'
+    )
+    db.session.add(notification)
+
     db.session.commit()
     return jsonify({"message": "Complaint updated successfully"}), 200
 
@@ -439,6 +450,19 @@ def reply_to_feedback(feedback_id):
     feedback = Feedback.query.get_or_404(feedback_id)
     feedback.admin_response = data.get('admin_response')
     feedback.status = data.get('status', 'resolved')
+
+    # Create notification for the user about the feedback/complaint response
+    feedback_type_label = 'complaint' if feedback.type == 'complaint' else 'feedback'
+    subject_text = feedback.subject if feedback.subject else 'your submission'
+    notification = Notification(
+        user_id=feedback.user_id,
+        message=f"Admin has responded to your {feedback_type_label}: {subject_text}",
+        channel='notification',
+        type='feedback_response',
+        status='unread'
+    )
+    db.session.add(notification)
+
     db.session.commit()
     return jsonify({"message": "Response sent successfully"}), 200
 
@@ -628,11 +652,11 @@ def send_communication():
 
     # Determine which users to send to
     if recipients == 'all':
-        users = User.query.all()
+        users = User.query.filter(User.role != 'admin').all()  # Exclude admins
     elif recipients == 'active':
-        users = User.query.filter_by(status='active').all()
+        users = User.query.filter_by(status='active').filter(User.role != 'admin').all()  # Exclude admins
     elif recipients == 'specific':
-        users = User.query.filter(User.id.in_(specific_users)).all()
+        users = User.query.filter(User.id.in_(specific_users)).filter(User.role != 'admin').all()  # Exclude admins
     else:
         return jsonify({"error": "Invalid recipients"}), 400
 
@@ -643,7 +667,7 @@ def send_communication():
             message=message,
             channel=channel,
             type='promo',
-            status='sent'
+            status='unread'  # Changed from 'sent' to 'unread' to trigger bell notification
         )
         db.session.add(notification)
 

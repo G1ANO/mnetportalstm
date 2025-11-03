@@ -806,25 +806,64 @@ const AdminDashboard = ({ user }) => {
                 <p style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>No tier data available</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  {/* Bar Chart */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'space-around',
-                    height: '400px',
-                    padding: '2rem 1rem',
-                    backgroundColor: 'rgba(51, 65, 85, 0.3)',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(71, 85, 105, 0.5)',
-                    gap: '1rem'
-                  }}>
-                    {tierAnalytics.map((tier) => {
-                      // Scale to 1-10 range
-                      const maxSubscribers = Math.max(...tierAnalytics.map(t => t.active_subscribers), 10);
-                      const scaledHeight = (tier.active_subscribers / maxSubscribers) * 100;
-                      const barHeight = Math.max(scaledHeight, 5); // Minimum 5% height for visibility
+                  {/* Bar Chart with Y-axis scale */}
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    {/* Y-axis labels */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-end',
+                      paddingRight: '0.5rem',
+                      height: '350px',
+                      fontSize: '0.75rem',
+                      color: '#94a3b8',
+                      fontWeight: '500',
+                      minWidth: '30px'
+                    }}>
+                      <div>15</div>
+                      <div>12</div>
+                      <div>9</div>
+                      <div>6</div>
+                      <div>3</div>
+                      <div>0</div>
+                    </div>
 
-                      return (
+                    {/* Bar Chart */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'space-around',
+                      height: '350px',
+                      padding: '2rem 1rem',
+                      backgroundColor: 'rgba(51, 65, 85, 0.3)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(71, 85, 105, 0.5)',
+                      gap: '1rem',
+                      flex: 1,
+                      position: 'relative'
+                    }}>
+                      {/* Grid lines for reference */}
+                      {[0, 3, 6, 9, 12, 15].map((value) => (
+                        <div key={`grid-${value}`} style={{
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          bottom: `${(value / 15) * 100}%`,
+                          height: '1px',
+                          backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                          pointerEvents: 'none'
+                        }} />
+                      ))}
+
+                      {tierAnalytics.map((tier) => {
+                        // Fixed scale: 0-15 users
+                        const maxScale = 15;
+                        // Scale to pixel height (max 280px for the bar)
+                        const barHeightPx = (tier.active_subscribers / maxScale) * 280;
+                        const finalBarHeight = Math.max(barHeightPx, 5); // Minimum 5px for visibility
+
+                        return (
                         <div key={tier.tier_id} style={{
                           display: 'flex',
                           flexDirection: 'column',
@@ -835,13 +874,12 @@ const AdminDashboard = ({ user }) => {
                           {/* Bar */}
                           <div style={{
                             width: '100%',
-                            height: `${barHeight}%`,
+                            height: `${finalBarHeight}px`,
                             backgroundColor: '#6366f1',
                             borderRadius: '4px 4px 0 0',
                             transition: 'all 0.3s ease',
                             cursor: 'pointer',
-                            position: 'relative',
-                            minHeight: '20px'
+                            position: 'relative'
                           }} title={`${tier.tier_name}: ${tier.active_subscribers} active subscribers`}>
                             {/* Subscriber count label on bar */}
                             <div style={{
@@ -878,8 +916,9 @@ const AdminDashboard = ({ user }) => {
                             KSH {tier.price}
                           </div>
                         </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Statistics Table */}
