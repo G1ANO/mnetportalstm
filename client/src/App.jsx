@@ -36,13 +36,31 @@ function App() {
   }, []); // Run only once on mount
 
   const handleLogin = (userData) => {
+    console.log('App.handleLogin: Received userData:', userData);
+    console.log('App.handleLogin: userData.id =', userData.id);
+
+    // Ensure userData has an id
+    if (!userData.id) {
+      console.error('ERROR: userData does not have an id!', userData);
+      alert('Error: User ID not found. Please try logging in again.');
+      return;
+    }
+
     setUser(userData);
     // Store complete user object in localStorage
-    localStorage.setItem('user', JSON.stringify(userData));
+    const userToStore = {
+      id: userData.id,
+      username: userData.username,
+      email: userData.email,
+      isAdmin: userData.isAdmin
+    };
+    console.log('App.handleLogin: Storing user object:', userToStore);
+    localStorage.setItem('user', JSON.stringify(userToStore));
     // Also store individual fields for backward compatibility
     localStorage.setItem('username', userData.username);
     localStorage.setItem('userEmail', userData.email);
     localStorage.setItem('isAdmin', userData.isAdmin);
+    localStorage.setItem('userId', userData.id);
     // Redirect both users and admins to dashboard
     setCurrentPage('dashboard');
     localStorage.setItem('currentPage', 'dashboard');

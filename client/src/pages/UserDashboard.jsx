@@ -32,9 +32,12 @@ const UserDashboard = ({ user }) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    console.log('UserDashboard: Received user prop:', user);
+    console.log('UserDashboard: user.id =', user?.id);
+    if (user && user.id) {
+      fetchData();
+    }
+  }, [user]);
 
   const fetchData = async () => {
     try {

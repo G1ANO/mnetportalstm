@@ -35,13 +35,20 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
         // Extract first name from full name
         const firstName = form.name ? form.name.split(' ')[0] : 'User';
 
-        // Auto-login the newly registered user
+        // Auto-login the newly registered user with ID from backend response
+        const userData = {
+          id: registerRes.data.user_id,
+          username: firstName,
+          email: form.email,
+          isAdmin: false
+        };
+
+        console.log('Register: Sending user data to handleLogin:', userData);
+        console.log('Register: Backend response:', registerRes.data);
+        console.log('TIMESTAMP:', new Date().toISOString());
+
         if (onRegisterSuccess) {
-          onRegisterSuccess({
-            username: firstName,
-            email: form.email,
-            isAdmin: false
-          });
+          onRegisterSuccess(userData);
         } else if (onGoToLogin) {
           onGoToLogin();
         }
