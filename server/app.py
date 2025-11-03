@@ -34,7 +34,7 @@ def register():
         email=data['email'],
         phone_number=data.get('phone_number'),
         role='user'
-    )#this creates a new user
+    )#Ya a new user
 
     user.set_password(data['password'])
     db.session.add(user)
