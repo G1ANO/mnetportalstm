@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Configure CORS to allow requests from frontend
-# In production, this will be your Vercel URL
+# In production, Vercel URL
 # In development, it allows localhost
 allowed_origins = [
     app.config['FRONTEND_URL'],  # From environment variable
