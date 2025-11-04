@@ -28,6 +28,32 @@ db.init_app(app)
 bcrypt.init_app(app)
 migrate = Migrate(app, db)
 
+# Initialize database tables and create admin user on startup
+def init_db():
+    """Initialize database tables and create default admin user if not exists"""
+    with app.app_context():
+        # Create all tables
+        db.create_all()
+
+        # Create admin user if it doesn't exist
+        admin_email = 'admin@mnet.com'
+        if not User.query.filter_by(email=admin_email).first():
+            admin = User(
+                name='Admin',
+                email=admin_email,
+                phone_number='0737115102',
+                role='admin'
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print(f"✅ Admin user created: {admin_email}")
+        else:
+            print(f"✅ Admin user already exists: {admin_email}")
+
+# Run initialization when app starts
+init_db()
+
 @app.route('/')
 def home():
     return jsonify({"message": "Welcome to WiFi Portal"}), 200
