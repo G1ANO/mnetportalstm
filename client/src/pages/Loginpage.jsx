@@ -3,8 +3,7 @@ import api from '../api';
 import '../index.css';
 
 export const LoginPage = ({ onLogin, onGoToRegister }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,8 +15,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
     try {
       // Call the real login API
       const response = await api.post('/login', {
-        email,
-        password
+        identifier
       });
 
       if (response.status === 200) {
@@ -35,7 +33,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMsg = err.response?.data?.error || 'Login failed. Please check your credentials.';
+      const errorMsg = err.response?.data?.error || 'Login failed. Please check your email or phone number.';
       setError(errorMsg);
       alert(errorMsg);
     } finally {
@@ -78,25 +76,13 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
           {/* Login Form */}
           <form onSubmit={handleLogin}>
             <div style={styles.formGroup}>
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="identifier">Email or Phone Number</label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                id="identifier"
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="Enter your email or phone number"
                 required
               />
             </div>
