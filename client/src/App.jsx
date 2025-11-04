@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "./api";
 import { LoginPage } from "./pages/Loginpage";
 import Register from "./pages/Register";
 import { HomePage } from "./pages/Home";
@@ -106,7 +106,7 @@ function App() {
   const fetchNotifications = async () => {
     if (!user || user.isAdmin) return;
     try {
-      const res = await axios.get(`http://localhost:5000/notifications?user_id=${user.id}`);
+      const res = await api.get(`/notifications?user_id=${user.id}`);
       const unread = res.data.filter(n => n.status === 'unread').length;
       setUnreadCount(unread);
     } catch (err) {
@@ -118,7 +118,7 @@ function App() {
     if (!user || user.isAdmin) return;
     // Mark all as read
     try {
-      await axios.patch(`http://localhost:5000/notifications/mark-all-read?user_id=${user.id}`);
+      await api.patch(`/notifications/mark-all-read?user_id=${user.id}`);
       setUnreadCount(0);
     } catch (err) {
       console.error("Error marking notifications as read:", err);

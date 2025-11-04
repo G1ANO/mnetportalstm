@@ -202,7 +202,7 @@ const AdminDashboard = ({ user }) => {
   const disconnectUser = async (userId) => {
     if (!window.confirm("Disconnect this user from the network?")) return;
     try {
-      await axios.post(`http://localhost:5000/users/${userId}/disconnect`, {
+      await api.post(`/users/${userId}/disconnect`, {
         admin_id: user.id
       });
       alert('User disconnected successfully!');

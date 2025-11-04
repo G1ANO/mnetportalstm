@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import '../index.css';
 
 const ComplaintForm = ({ userId }) => {
@@ -18,7 +18,7 @@ const ComplaintForm = ({ userId }) => {
     setIsSubmitting(true);
 
     try {
-      await axios.post('http://localhost:5000/complaints', {
+      await api.post('/complaints', {
         user_id: userId,
         ...form,
       });

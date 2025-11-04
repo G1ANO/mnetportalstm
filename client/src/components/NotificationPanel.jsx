@@ -1,15 +1,15 @@
 // NotificationPanel.jsx
 import React, { useEffect, useState } from "react";
+import api from "../api";
 
 function NotificationPanel() {
   const [daysLeft, setDaysLeft] = useState(null);
 
   useEffect(() => {
     // Fetch subscription info from backend
-    fetch("http://localhost:5000/api/subscription")
-      .then((res) => res.json())
-      .then((data) => {
-        const endDate = new Date(data.subscriptionEndDate);
+    api.get("/api/subscription")
+      .then((res) => {
+        const endDate = new Date(res.data.subscriptionEndDate);
         const today = new Date();
         const diff = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         setDaysLeft(diff);
