@@ -105,7 +105,7 @@ const HomeInternetPanel = ({ user }) => {
   const disconnectUser = async (userId) => {
     if (!window.confirm("Disconnect this user from the network?")) return;
     try {
-      await axios.post(`http://localhost:5000/users/${userId}/disconnect`, {
+      await api.post(`/users/${userId}/disconnect`, {
         admin_id: user.id
       });
       alert('User disconnected successfully!');
@@ -123,7 +123,7 @@ const HomeInternetPanel = ({ user }) => {
     }
     try {
       // First, register the user
-      const registerRes = await axios.post('http://localhost:5000/register', {
+      const registerRes = await api.post('/register', {
         name: subscriberForm.name,
         email: subscriberForm.email,
         phone_number: subscriberForm.phone_number,
@@ -133,7 +133,7 @@ const HomeInternetPanel = ({ user }) => {
       const newUserId = registerRes.data.user_id || registerRes.data.id;
 
       // Then, create a subscription for them
-      await axios.post('http://localhost:5000/subscriptions', {
+      await api.post('/subscriptions', {
         user_id: newUserId,
         tier_id: parseInt(subscriberForm.tier_id)
       });
@@ -150,7 +150,7 @@ const HomeInternetPanel = ({ user }) => {
   const handleCreateTier = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/tiers', {
+      await api.post('/tiers', {
         ...tierForm,
         tier_type: 'home_internet',
         admin_id: user.id
@@ -167,7 +167,7 @@ const HomeInternetPanel = ({ user }) => {
   const handleUpdateTier = async (e) => {
     e.preventDefault();
     try {
-      await axios.patch(`http://localhost:5000/tiers/${editingTier.id}`, {
+      await api.patch(`/tiers/${editingTier.id}`, {
         ...tierForm,
         tier_type: 'home_internet',
         admin_id: user.id
@@ -184,7 +184,7 @@ const HomeInternetPanel = ({ user }) => {
   const deleteTier = async (tierId) => {
     if (!window.confirm("Are you sure you want to delete this home internet tier?")) return;
     try {
-      await axios.delete(`http://localhost:5000/tiers/${tierId}`, {
+      await api.delete(`/tiers/${tierId}`, {
         data: { admin_id: user.id },
       });
       fetchTiers();

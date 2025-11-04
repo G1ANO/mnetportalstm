@@ -141,7 +141,7 @@ const AdminDashboard = ({ user }) => {
   const handleCreateTier = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/tiers', {
+      await api.post('/tiers', {
         ...tierForm,
         speed_limit: 0,
         data_limit: 0,
@@ -160,7 +160,7 @@ const AdminDashboard = ({ user }) => {
   const handleUpdateTier = async (e) => {
     e.preventDefault();
     try {
-      await axios.patch(`http://localhost:5000/tiers/${editingTier.id}`, {
+      await api.patch(`/tiers/${editingTier.id}`, {
         ...tierForm,
         speed_limit: 0,
         data_limit: 0,
@@ -179,7 +179,7 @@ const AdminDashboard = ({ user }) => {
   const deleteTier = async (tierId) => {
     if (!window.confirm("Are you sure you want to delete this hotspot tier?")) return;
     try {
-      await axios.delete(`http://localhost:5000/tiers/${tierId}`, {
+      await api.delete(`/tiers/${tierId}`, {
         data: { admin_id: user.id },
       });
       fetchTiers();
