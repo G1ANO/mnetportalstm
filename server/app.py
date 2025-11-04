@@ -96,17 +96,18 @@ def register():
 def login():
     data = request.get_json()
     identifier = data.get('identifier')  # Can be email or phone number
+    password = data.get('password')
 
-    if not identifier:
-        return jsonify({"error": "Email or phone number required"}), 400
+    if not identifier or not password:
+        return jsonify({"error": "Email/phone and password required"}), 400
 
     # Try to find user by email or phone number
     user = User.query.filter(
         (User.email == identifier) | (User.phone_number == identifier)
     ).first()
 
-    if not user:
-        return jsonify({"error": "User not found"}), 401
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
 
     return jsonify({
         "message": "Login successful",

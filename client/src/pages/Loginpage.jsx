@@ -4,6 +4,7 @@ import '../index.css';
 
 export const LoginPage = ({ onLogin, onGoToRegister }) => {
   const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,7 +16,8 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
     try {
       // Call the real login API
       const response = await api.post('/login', {
-        identifier
+        identifier,
+        password
       });
 
       if (response.status === 200) {
@@ -33,7 +35,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMsg = err.response?.data?.error || 'Login failed. Please check your email or phone number.';
+      const errorMsg = err.response?.data?.error || 'Login failed. Please check your credentials.';
       setError(errorMsg);
       alert(errorMsg);
     } finally {
@@ -83,6 +85,18 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Enter your email or phone number"
+                required
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
                 required
               />
             </div>
