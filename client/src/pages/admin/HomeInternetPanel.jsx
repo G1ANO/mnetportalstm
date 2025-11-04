@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
+import api from '../../api';
 import "../../index.css"
 
 const HomeInternetPanel = ({ user }) => {
@@ -54,7 +54,7 @@ const HomeInternetPanel = ({ user }) => {
   const fetchTiers = async () => {
     try {
       // Fetch only home_internet tiers
-      const res = await axios.get('http://localhost:5000/tiers?type=home_internet');
+      const res = await api.get('/tiers?type=home_internet');
       setTiers(res.data);
     } catch(err) {
       console.error("Error fetching tiers:", err);
@@ -63,7 +63,7 @@ const HomeInternetPanel = ({ user }) => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/users');
+      const res = await api.get('/users');
       // Filter to only show users with active home_internet subscriptions
       const homeInternetSubscribers = res.data.filter(user => {
         return user.subscriptions && user.subscriptions.some(sub =>
@@ -78,12 +78,12 @@ const HomeInternetPanel = ({ user }) => {
 
   const fetchLoyaltyRecords = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/loyalty/all');
+      const res = await api.get('/loyalty/all');
       // Fetch user details for each loyalty record
       const recordsWithUsers = await Promise.all(
         res.data.map(async (record) => {
           try {
-            const userRes = await axios.get(`http://localhost:5000/users/${record.user_id}`);
+            const userRes = await api.get(`/users/${record.user_id}`);
             return {
               ...record,
               user: userRes.data

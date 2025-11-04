@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import '../index.css';
 
 // Utility function to format datetime in GMT+3 (East Africa Time)
@@ -36,7 +36,7 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/feedbacks?user_id=${userId}`);
+      const response = await api.get(`/feedbacks?user_id=${userId}`);
       // Keep only the 3 most recent submissions
       setSubmissions(response.data.slice(0, 3));
     } catch (error) {
@@ -55,7 +55,7 @@ const FeedbackForm = ({ userId, notifications = [], subscriptionType = 'hotspot'
     setIsSubmitting(true);
 
     try {
-      await axios.post('http://localhost:5000/feedbacks', {
+      await api.post('/feedbacks', {
         user_id: userId,
         subscription_type: subscriptionType,
         ...form,

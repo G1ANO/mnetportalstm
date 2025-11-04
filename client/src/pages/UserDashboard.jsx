@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api";
 import FeedbackForm from "../components/FeedbackForm";
 import "../index.css";
 
@@ -58,7 +58,7 @@ const UserDashboard = ({ user }) => {
   const fetchSubscription = async () => {
     try {
       // Fetch all hotspot subscriptions (ordered by date, most recent first)
-      const res = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}&type=hotspot`);
+      const res = await api.get(`/subscriptions?user_id=${user.id}&type=hotspot`);
       // Keep up to 3 most recent subscriptions for history
       setSubscriptions(res.data.slice(0, 3));
     } catch (err) {
@@ -69,7 +69,7 @@ const UserDashboard = ({ user }) => {
   const fetchTiers = async () => {
     try {
       // Fetch only hotspot tiers
-      const res = await axios.get("http://localhost:5000/tiers?type=hotspot");
+      const res = await api.get("/tiers?type=hotspot");
       setTiers(res.data);
     } catch (err) {
       console.error("Error fetching tiers:", err);
@@ -78,7 +78,7 @@ const UserDashboard = ({ user }) => {
 
   const fetchLoyalty = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/loyalty?user_id=${user.id}`);
+      const res = await api.get(`/loyalty?user_id=${user.id}`);
       setLoyalty(res.data);
     } catch (err) {
       console.error("Error fetching loyalty:", err);
@@ -87,7 +87,7 @@ const UserDashboard = ({ user }) => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/notifications?user_id=${user.id}`);
+      const res = await api.get(`/notifications?user_id=${user.id}`);
       setNotifications(res.data);
       // Count unread notifications
       const unread = res.data.filter(n => n.status === 'unread').length;
@@ -99,7 +99,7 @@ const UserDashboard = ({ user }) => {
 
   const markAllNotificationsRead = async () => {
     try {
-      await axios.patch(`http://localhost:5000/notifications/mark-all-read?user_id=${user.id}`);
+      await api.patch(`/notifications/mark-all-read?user_id=${user.id}`);
       fetchNotifications(); // Refresh notifications
     } catch (err) {
       console.error("Error marking notifications as read:", err);
@@ -162,7 +162,7 @@ const UserDashboard = ({ user }) => {
     }
 
     try {
-      await axios.post('http://localhost:5000/subscriptions', {
+      await api.post('/subscriptions', {
         user_id: user.id,
         tier_id: tierId
       });
@@ -207,7 +207,7 @@ const UserDashboard = ({ user }) => {
     if (!window.confirm(confirmMessage)) return;
 
     try {
-      const response = await axios.post('http://localhost:5000/loyalty/redeem', {
+      const response = await api.post('/loyalty/redeem', {
         user_id: user.id,
         tier_id: tierId
       });

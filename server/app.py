@@ -4,10 +4,25 @@ from flask_cors import CORS
 from models import db, bcrypt, User, SubscriptionTier, Subscription, Feedback, Complaint, LoyaltyPoint, Notification
 from config import Config
 from datetime import datetime, timedelta, timezone
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)  # Enable CORS for all routes
+
+# Configure CORS to allow requests from frontend
+# In production, this will be your Vercel URL
+# In development, it allows localhost
+allowed_origins = [
+    app.config['FRONTEND_URL'],  # From environment variable
+    'http://localhost:5173',      # Local development
+    'http://127.0.0.1:5173',      # Local development alternative
+]
+
+# Add production frontend URL if set
+if os.environ.get('FRONTEND_URL'):
+    allowed_origins.append(os.environ.get('FRONTEND_URL'))
+
+CORS(app, origins=allowed_origins, supports_credentials=True)
 
 db.init_app(app)
 bcrypt.init_app(app)

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import '../index.css';
 
 export const LoginPage = ({ onLogin, onGoToRegister }) => {
@@ -15,7 +15,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
 
     try {
       // Call the real login API
-      const response = await axios.post('http://localhost:5000/login', {
+      const response = await api.post('/login', {
         email,
         password
       });

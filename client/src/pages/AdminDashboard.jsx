@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
+import api from '../api';
 import "../index.css"
 
 // GMT+3 datetime formatter
@@ -77,7 +77,7 @@ const AdminDashboard = ({ user }) => {
   const fetchTiers = async () => {
     try {
       // Fetch only hotspot tiers
-      const res = await axios.get('http://localhost:5000/tiers?type=hotspot');
+      const res = await api.get('/tiers?type=hotspot');
       setTiers(res.data);
     } catch(err) {
       console.error("Error fetching tiers:", err);
@@ -86,7 +86,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/users');
+      const res = await api.get('/users');
       setUsers(res.data);
     } catch(err) {
       console.error("Error fetching users:", err);
@@ -95,7 +95,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchLoyaltyRecords = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/loyalty/all');
+      const res = await api.get('/loyalty/all');
       setLoyaltyRecords(res.data);
     } catch(err) {
       console.error("Error fetching loyalty records:", err);
@@ -104,7 +104,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchHotspotFeedbacks = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/feedbacks?user_id=${user.id}&subscription_type=hotspot`);
+      const res = await api.get(`/feedbacks?user_id=${user.id}&subscription_type=hotspot`);
       setHotspotFeedbacks(res.data);
     } catch(err) {
       console.error("Error fetching hotspot feedbacks:", err);
@@ -113,7 +113,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchHomeInternetFeedbacks = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/feedbacks?user_id=${user.id}&subscription_type=home_internet`);
+      const res = await api.get(`/feedbacks?user_id=${user.id}&subscription_type=home_internet`);
       setHomeInternetFeedbacks(res.data);
     } catch(err) {
       console.error("Error fetching home internet feedbacks:", err);
@@ -122,7 +122,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchComplaints = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/complaints?user_id=${user.id}`);
+      const res = await api.get(`/complaints?user_id=${user.id}`);
       setComplaints(res.data);
     } catch (err) {
       console.error("Error fetching complaints:", err);
@@ -131,7 +131,7 @@ const AdminDashboard = ({ user }) => {
 
   const fetchTierAnalytics = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/analytics/tier-subscriptions?type=hotspot');
+      const res = await api.get('/analytics/tier-subscriptions?type=hotspot');
       setTierAnalytics(res.data);
     } catch(err) {
       console.error("Error fetching tier analytics:", err);
@@ -216,7 +216,7 @@ const AdminDashboard = ({ user }) => {
     const response = prompt("Enter your response to this feedback:");
     if (!response) return;
     try {
-      await axios.patch(`http://localhost:5000/feedbacks/${feedbackId}/reply`, {
+      await api.patch(`/feedbacks/${feedbackId}/reply`, {
         admin_response: response,
         admin_id: user.id
       });
@@ -233,7 +233,7 @@ const AdminDashboard = ({ user }) => {
     const admin_response = prompt("Enter your response:");
     if (!admin_response) return;
     try {
-      await axios.patch(`http://localhost:5000/complaints/${id}/reply`, {
+      await api.patch(`/complaints/${id}/reply`, {
         admin_response,
         admin_id: user.id,
       });
@@ -246,7 +246,7 @@ const AdminDashboard = ({ user }) => {
   const handleSendCommunication = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/communications/send', {
+      await api.post('/communications/send', {
         ...commForm,
         admin_id: user.id
       });

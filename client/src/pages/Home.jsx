@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import '../index.css';
 import FeedbackForm from '../components/FeedbackForm';
 
@@ -35,23 +35,23 @@ export const HomePage = ({ user }) => {
     try {
       setLoading(true);
       // Fetch home internet tiers only
-      const tiersRes = await axios.get('http://localhost:5000/tiers?type=home_internet');
+      const tiersRes = await api.get('/tiers?type=home_internet');
       setHomeTiers(tiersRes.data);
 
       // Fetch user subscription - only home_internet subscriptions
-      const subRes = await axios.get(`http://localhost:5000/subscriptions?user_id=${user.id}&type=home_internet`);
+      const subRes = await api.get(`/subscriptions?user_id=${user.id}&type=home_internet`);
       if (subRes.data && subRes.data.length > 0) {
         setSubscription(subRes.data[0]);
       }
 
       // Fetch loyalty points
-      const loyaltyRes = await axios.get(`http://localhost:5000/loyalty?user_id=${user.id}`);
+      const loyaltyRes = await api.get(`/loyalty?user_id=${user.id}`);
       if (loyaltyRes.data) {
         setLoyalty(loyaltyRes.data);
       }
 
       // Fetch notifications
-      const notifRes = await axios.get(`http://localhost:5000/notifications?user_id=${user.id}`);
+      const notifRes = await api.get(`/notifications?user_id=${user.id}`);
       setNotifications(notifRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
