@@ -1,0 +1,375 @@
+/* Home Page - Responsive Overrides */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .home-page-container {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .home-header {
+    margin-bottom: 2rem !important;
+  }
+
+  .home-heading {
+    font-size: 2rem !important;
+  }
+
+  .home-plans-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+}
+
+/* Mobile Devices (max-width: 768px) */
+@media (max-width: 768px) {
+  .home-page-container {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .home-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .home-icon-container {
+    width: 60px !important;
+    height: 60px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .home-icon {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .home-heading {
+    font-size: 1.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-sub-heading {
+    font-size: 1rem !important;
+  }
+
+  /* Tab Navigation */
+  .home-tab-container {
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.4rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .home-tab {
+    padding: 0.625rem 1rem !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Section Headers */
+  .home-section-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .home-section-title {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-section-description {
+    font-size: 0.9rem !important;
+  }
+
+  /* Plans Grid - Single Column on Mobile */
+  .home-plans-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .home-plan-card {
+    padding: 1.25rem !important;
+  }
+
+  .home-plan-header {
+    margin-bottom: 1.25rem !important;
+    padding-bottom: 0.875rem !important;
+  }
+
+  .home-plan-name {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-plan-price .currency {
+    font-size: 0.9rem !important;
+  }
+
+  .home-plan-price .amount {
+    font-size: 2rem !important;
+  }
+
+  .home-plan-price .period {
+    font-size: 0.85rem !important;
+  }
+
+  .home-plan-body {
+    padding: 1rem !important;
+  }
+
+  .home-plan-feature {
+    padding: 0.625rem 0 !important;
+  }
+
+  .home-whatsapp-btn {
+    margin-top: 1.25rem !important;
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Connection Details */
+  .home-connection-details {
+    gap: 1rem !important;
+  }
+
+  .home-detail-row {
+    padding: 0.875rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .home-detail-label {
+    font-size: 0.8rem !important;
+  }
+
+  .home-detail-value {
+    font-size: 1rem !important;
+  }
+
+  .home-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .home-detail-item {
+    padding: 0.875rem !important;
+  }
+
+  /* Loyalty Section */
+  .home-loyalty-container {
+    padding: 1.5rem !important;
+  }
+
+  .home-points-circle {
+    width: 150px !important;
+    height: 150px !important;
+    margin: 0 auto 1.5rem !important;
+  }
+
+  .home-points-number {
+    font-size: 2rem !important;
+  }
+
+  .home-points-label {
+    font-size: 0.8rem !important;
+  }
+
+  .home-points-breakdown {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .home-breakdown-item {
+    padding: 0.875rem !important;
+  }
+
+  .home-breakdown-label {
+    font-size: 0.8rem !important;
+  }
+
+  .home-breakdown-value {
+    font-size: 1.25rem !important;
+  }
+
+  /* Redeem Plans Grid */
+  .home-redeem-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Footer */
+  .home-footer {
+    margin-top: 3rem !important;
+    padding-top: 1.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Small Phones (max-width: 480px) */
+@media (max-width: 480px) {
+  .home-page-container {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .home-header {
+    margin-bottom: 1rem !important;
+  }
+
+  .home-icon-container {
+    width: 50px !important;
+    height: 50px !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-icon {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .home-heading {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .home-sub-heading {
+    font-size: 0.9rem !important;
+  }
+
+  /* Tabs - Smaller on Small Phones */
+  .home-tab-container {
+    margin-bottom: 1rem !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .home-tab {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Section Headers */
+  .home-section-title {
+    font-size: 1.35rem !important;
+  }
+
+  .home-section-description {
+    font-size: 0.85rem !important;
+  }
+
+  /* Plan Cards */
+  .home-plan-card {
+    padding: 1rem !important;
+  }
+
+  .home-plan-name {
+    font-size: 1.125rem !important;
+  }
+
+  .home-plan-price .amount {
+    font-size: 1.75rem !important;
+  }
+
+  .home-plan-body {
+    padding: 0.875rem !important;
+  }
+
+  .home-whatsapp-btn {
+    padding: 0.625rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Connection Details */
+  .home-detail-row {
+    padding: 0.75rem !important;
+  }
+
+  .home-detail-label {
+    font-size: 0.75rem !important;
+  }
+
+  .home-detail-value {
+    font-size: 0.95rem !important;
+  }
+
+  /* Loyalty */
+  .home-loyalty-container {
+    padding: 1rem !important;
+  }
+
+  .home-points-circle {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto 1rem !important;
+  }
+
+  .home-points-number {
+    font-size: 1.75rem !important;
+  }
+
+  .home-points-label {
+    font-size: 0.75rem !important;
+  }
+
+  .home-breakdown-item {
+    padding: 0.75rem !important;
+  }
+
+  .home-breakdown-value {
+    font-size: 1.125rem !important;
+  }
+
+  /* Footer */
+  .home-footer {
+    margin-top: 2rem !important;
+    padding-top: 1rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Landscape Mode on Phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .home-page-container {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  .home-header {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-icon-container {
+    width: 40px !important;
+    height: 40px !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .home-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .home-heading {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .home-sub-heading {
+    font-size: 0.8rem !important;
+  }
+
+  .home-tab-container {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .home-section-header {
+    margin-bottom: 1rem !important;
+  }
+
+  .home-points-circle {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+

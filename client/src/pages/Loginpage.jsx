@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
 import '../index.css';
+import './auth.css';
 
 export const LoginPage = ({ onLogin, onGoToRegister }) => {
   const [identifier, setIdentifier] = useState('');
@@ -44,14 +45,15 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
   };
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={styles.loginContainer}>
-        <div className="card" style={styles.card}>
+    <div style={styles.pageContainer} className="auth-page-container">
+      <div style={styles.loginContainer} className="auth-container">
+        <div className="card auth-card" style={styles.card}>
           {/* Header */}
           <div style={styles.header}>
-            <div style={styles.iconContainer}>
+            <div style={styles.iconContainer} className="auth-icon-container">
               <svg
                 style={styles.icon}
+                className="auth-icon"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -64,20 +66,20 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
                 />
               </svg>
             </div>
-            <h2 style={styles.title}>Welcome Back</h2>
-            <p style={styles.subtitle}>Sign in to your WiFi Portal account</p>
+            <h2 style={styles.title} className="auth-title">Welcome Back</h2>
+            <p style={styles.subtitle} className="auth-subtitle">Sign in to your WiFi Portal account</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="alert alert-danger" style={styles.errorAlert}>
+            <div className="alert alert-danger auth-alert" style={styles.errorAlert}>
               {error}
             </div>
           )}
 
           {/* Login Form */}
           <form onSubmit={handleLogin}>
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="identifier">Email or Phone Number</label>
               <input
                 id="identifier"
@@ -89,7 +91,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
               />
             </div>
 
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="password">Password</label>
               <input
                 id="password"
@@ -103,7 +105,7 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
 
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-primary auth-submit-button"
               style={styles.submitButton}
               disabled={isLoading}
             >
@@ -119,8 +121,8 @@ export const LoginPage = ({ onLogin, onGoToRegister }) => {
           </form>
 
           {/* Register Link */}
-          <div style={styles.footer}>
-            <p style={styles.footerText}>
+          <div style={styles.footer} className="auth-footer">
+            <p style={styles.footerText} className="auth-footer-text">
               Don't have an account?{' '}
               <button onClick={onGoToRegister} className="btn-link" style={styles.registerLink}>
                 Create Account
@@ -150,10 +152,19 @@ const styles = {
   loginContainer: {
     width: '100%',
     maxWidth: '450px',
+    padding: '0 1rem',
   },
   card: {
     padding: '2.5rem',
     marginBottom: '1.5rem',
+  },
+  '@media (max-width: 768px)': {
+    pageContainer: {
+      padding: '1rem',
+    },
+    card: {
+      padding: '1.5rem',
+    },
   },
   header: {
     textAlign: 'center',

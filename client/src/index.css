@@ -299,11 +299,174 @@ button[type="submit"]:active {
   grid-template-columns: repeat(4, 1fr);
 }
 
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+/* Tablets and Small Laptops (768px - 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    padding: var(--spacing-lg);
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile Devices (max-width: 768px) */
 @media (max-width: 768px) {
+  /* Typography - Responsive Scaling */
+  h1 {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  /* Container & Layout */
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  /* Grid Layouts - Stack on Mobile */
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4 {
     grid-template-columns: 1fr;
+  }
+
+  /* Buttons - Full Width on Mobile */
+  .btn,
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Tables - Better Mobile Experience */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    font-size: 0.875rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* Forms - Touch Friendly */
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents iOS zoom */
+    padding: 0.875rem;
+  }
+
+  /* Modal/Card Adjustments */
+  .modal-content,
+  .card-large {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+/* Small Phones (max-width: 480px) */
+@media (max-width: 480px) {
+  /* Typography - Further Reduction */
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+
+  /* Spacing Adjustments */
+  .container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  /* Buttons - Smaller Padding */
+  .btn,
+  button {
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Tables - Compact View */
+  th, td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  /* Badges - Smaller */
+  .badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  /* Reduce spacing */
+  .mt-5, .mb-5 {
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .p-5 {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* Landscape Mode on Phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
   }
 }
 

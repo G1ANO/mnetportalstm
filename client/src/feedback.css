@@ -148,7 +148,23 @@
   cursor: not-allowed;
 }
 
-/* Responsive Design */
+/* ============================================
+   RESPONSIVE DESIGN - FEEDBACK FORMS
+   ============================================ */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .feedback-container {
+    margin: 1.5rem auto;
+    padding: 0.75rem;
+  }
+
+  .feedback-card {
+    padding: 1.75rem;
+  }
+}
+
+/* Mobile Devices */
 @media (max-width: 768px) {
   .feedback-container {
     margin: 1rem auto;
@@ -156,16 +172,103 @@
   }
 
   .feedback-card {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .feedback-card h2 {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     margin-bottom: 1rem;
+  }
+
+  .feedback-card h3 {
+    font-size: 1.125rem;
   }
 
   .feedback-form {
     gap: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* Prevents iOS zoom */
+    padding: 0.75rem;
+  }
+
+  .star-rating {
+    gap: 0.5rem;
+  }
+
+  .star {
+    font-size: 1.75rem;
+  }
+
+  .feedback-textarea {
+    font-size: 16px;
+    min-height: 120px;
+  }
+
+  .submit-btn,
+  .feedback-btn {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+
+  /* Feedback List */
+  .feedback-list {
+    gap: 0.75rem;
+  }
+
+  .feedback-item {
+    padding: 1rem;
+  }
+
+  .feedback-item h4 {
+    font-size: 1rem;
+  }
+
+  .feedback-meta {
+    font-size: 0.8rem;
+  }
+}
+
+/* Small Phones */
+@media (max-width: 480px) {
+  .feedback-container {
+    margin: 0.5rem auto;
+    padding: 0.25rem;
+  }
+
+  .feedback-card {
+    padding: 1rem;
+  }
+
+  .feedback-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .feedback-card h3 {
+    font-size: 1rem;
+  }
+
+  .feedback-form {
+    gap: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.625rem;
   }
 
   .star {
@@ -173,7 +276,45 @@
   }
 
   .feedback-textarea {
-    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 100px;
+  }
+
+  .submit-btn,
+  .feedback-btn {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .feedback-item {
+    padding: 0.75rem;
+  }
+
+  .feedback-item h4 {
+    font-size: 0.95rem;
+  }
+
+  .feedback-meta {
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+  .feedback-card {
+    padding: 1rem;
+  }
+
+  .feedback-card h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .feedback-form {
+    gap: 0.5rem;
+  }
+
+  .feedback-textarea {
+    min-height: 80px;
   }
 }
 

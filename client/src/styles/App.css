@@ -120,3 +120,136 @@ h2 {
   cursor: pointer;
 }
 
+/* ============================================
+   RESPONSIVE DESIGN FOR DASHBOARDS
+   ============================================ */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .user-dashboard, .admin-dashboard {
+    margin: 1.5rem auto;
+    padding: 0.75rem;
+  }
+
+  .tier-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 768px) {
+  .user-dashboard, .admin-dashboard {
+    margin: 1rem auto;
+    padding: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+
+  /* Tier Cards - Single Column on Mobile */
+  .tier-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .tier-card {
+    padding: 0.875rem;
+  }
+
+  .tier-card h4 {
+    font-size: 1.125rem;
+  }
+
+  /* Card Buttons - Stack on Mobile */
+  .card-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-buttons button {
+    width: 100%;
+  }
+
+  /* Subscription Card */
+  .subscription-card {
+    padding: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Sections */
+  .feedback-section,
+  .complaint-section,
+  .loyalty-section,
+  .notification-section,
+  .tier-section,
+  .complaints-section {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Tables - Better Mobile Scrolling */
+  .table-container {
+    margin-top: 0.75rem;
+    border-radius: 8px;
+  }
+
+  /* Status Badges */
+  .status-badge.pending,
+  .status-badge.resolved {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  /* Reply Button */
+  .reply-btn,
+  .delete-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Small Phones */
+@media (max-width: 480px) {
+  .user-dashboard, .admin-dashboard {
+    margin: 0.5rem auto;
+    padding: 0.25rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+  }
+
+  .tier-cards {
+    gap: 0.5rem;
+  }
+
+  .tier-card {
+    padding: 0.75rem;
+  }
+
+  .tier-card h4 {
+    font-size: 1rem;
+  }
+
+  .subscription-card {
+    padding: 0.75rem;
+  }
+
+  .delete-btn,
+  .reply-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .status-badge.pending,
+  .status-badge.resolved {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+}

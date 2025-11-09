@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import '../index.css';
+import './home-responsive.css';
 import FeedbackForm from '../components/FeedbackForm';
 
 // Utility function to format datetime in GMT+3 (East Africa Time)
@@ -367,13 +368,14 @@ export const HomePage = ({ user }) => {
   };
 
   return (
-    <div style={styles.pageContainer}>
+    <div style={styles.pageContainer} className="home-page-container">
       <div className="container">
         {/* Header */}
-        <div style={styles.header}>
-          <div style={styles.iconContainer}>
+        <div style={styles.header} className="home-header">
+          <div style={styles.iconContainer} className="home-icon-container">
             <svg
               style={styles.icon}
+              className="home-icon"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -386,33 +388,37 @@ export const HomePage = ({ user }) => {
               />
             </svg>
           </div>
-          <h1 style={styles.heading}>Home Internet</h1>
-          <p style={styles.subHeading}>Reliable high-speed internet for your home</p>
+          <h1 style={styles.heading} className="home-heading">Home Internet</h1>
+          <p style={styles.subHeading} className="home-sub-heading">Reliable high-speed internet for your home</p>
         </div>
 
         {/* Tab Navigation */}
-        <div style={styles.tabContainer}>
+        <div style={styles.tabContainer} className="home-tab-container">
           <button
             onClick={() => setActiveTab('plans')}
             style={{...styles.tab, ...(activeTab === 'plans' ? styles.tabActive : {})}}
+            className="home-tab"
           >
             Home Internet Plans
           </button>
           <button
             onClick={() => setActiveTab('myplan')}
             style={{...styles.tab, ...(activeTab === 'myplan' ? styles.tabActive : {})}}
+            className="home-tab"
           >
             My Connection
           </button>
           <button
             onClick={() => setActiveTab('loyalty')}
             style={{...styles.tab, ...(activeTab === 'loyalty' ? styles.tabActive : {})}}
+            className="home-tab"
           >
             Loyalty Program
           </button>
           <button
             onClick={() => setActiveTab('feedback')}
             style={{...styles.tab, ...(activeTab === 'feedback' ? styles.tabActive : {})}}
+            className="home-tab"
           >
             Feedback & Complaints
           </button>
@@ -423,9 +429,9 @@ export const HomePage = ({ user }) => {
           {/* HOME INTERNET PLANS TAB */}
           {activeTab === 'plans' && (
             <div>
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>Available Home Internet Plans</h2>
-                <p style={styles.sectionDescription}>Choose the perfect plan for your home</p>
+              <div style={styles.sectionHeader} className="home-section-header">
+                <h2 style={styles.sectionTitle} className="home-section-title">Available Home Internet Plans</h2>
+                <p style={styles.sectionDescription} className="home-section-description">Choose the perfect plan for your home</p>
               </div>
 
               {loading ? (
@@ -437,28 +443,28 @@ export const HomePage = ({ user }) => {
                   </p>
                 </div>
               ) : (
-                <div style={styles.plansGrid}>
+                <div style={styles.plansGrid} className="home-plans-grid">
                   {homeTiers.map((tier) => (
-                    <div key={tier.id} className="card" style={styles.planCard}>
-                      <div style={styles.planHeader}>
-                        <h3 style={styles.planName}>{tier.name}</h3>
-                        <div style={styles.planPrice}>
-                          <span style={styles.currency}>KSH</span>
-                          <span style={styles.amount}>{tier.price}</span>
-                          <span style={styles.period}>/month</span>
+                    <div key={tier.id} className="card home-plan-card" style={styles.planCard}>
+                      <div style={styles.planHeader} className="home-plan-header">
+                        <h3 style={styles.planName} className="home-plan-name">{tier.name}</h3>
+                        <div style={styles.planPrice} className="home-plan-price">
+                          <span style={styles.currency} className="currency">KSH</span>
+                          <span style={styles.amount} className="amount">{tier.price}</span>
+                          <span style={styles.period} className="period">/month</span>
                         </div>
                       </div>
-                      <div style={styles.planFeatures}>
-                        <div style={styles.feature}>
+                      <div style={styles.planFeatures} className="home-plan-body">
+                        <div style={styles.feature} className="home-plan-feature">
                           <span>Speed: {tier.speed_limit} Mbps</span>
                         </div>
-                        <div style={styles.feature}>
+                        <div style={styles.feature} className="home-plan-feature">
                           <span>{tier.description}</span>
                         </div>
                       </div>
                       <button
                         onClick={handleWhatsAppRequest}
-                        className="btn-primary"
+                        className="btn-primary home-whatsapp-btn"
                         style={styles.whatsappBtn}
                       >
                         <svg style={styles.whatsappIcon} fill="currentColor" viewBox="0 0 24 24">
@@ -476,9 +482,9 @@ export const HomePage = ({ user }) => {
           {/* MY CONNECTION TAB */}
           {activeTab === 'myplan' && (
             <div>
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>My Home Internet Connection</h2>
-                <p style={styles.sectionDescription}>View your current connection details</p>
+              <div style={styles.sectionHeader} className="home-section-header">
+                <h2 style={styles.sectionTitle} className="home-section-title">My Home Internet Connection</h2>
+                <p style={styles.sectionDescription} className="home-section-description">View your current connection details</p>
               </div>
 
               {subscription ? (
@@ -486,26 +492,26 @@ export const HomePage = ({ user }) => {
                   <div className="card-header">
                     <h3 className="card-title">📡 Active Connection</h3>
                   </div>
-                  <div style={styles.connectionDetails}>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Plan Type:</span>
-                      <span style={styles.detailValue}>{subscription.tier_name || 'N/A'}</span>
+                  <div style={styles.connectionDetails} className="home-connection-details">
+                    <div style={styles.detailRow} className="home-detail-row">
+                      <span style={styles.detailLabel} className="home-detail-label">Plan Type:</span>
+                      <span style={styles.detailValue} className="home-detail-value">{subscription.tier_name || 'N/A'}</span>
                     </div>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Status:</span>
+                    <div style={styles.detailRow} className="home-detail-row">
+                      <span style={styles.detailLabel} className="home-detail-label">Status:</span>
                       <span className={`badge ${subscription.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
                         {subscription.status}
                       </span>
                     </div>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Time In:</span>
-                      <span style={styles.detailValue}>
+                    <div style={styles.detailRow} className="home-detail-row">
+                      <span style={styles.detailLabel} className="home-detail-label">Time In:</span>
+                      <span style={styles.detailValue} className="home-detail-value">
                         {formatToGMT3(subscription.start_date)} EAT
                       </span>
                     </div>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Time Expected Out:</span>
-                      <span style={styles.detailValue}>
+                    <div style={styles.detailRow} className="home-detail-row">
+                      <span style={styles.detailLabel} className="home-detail-label">Time Expected Out:</span>
+                      <span style={styles.detailValue} className="home-detail-value">
                         {formatToGMT3(subscription.end_date)} EAT
                       </span>
                     </div>
@@ -543,30 +549,30 @@ export const HomePage = ({ user }) => {
           {/* LOYALTY PROGRAM TAB */}
           {activeTab === 'loyalty' && (
             <div>
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>Loyalty Program</h2>
-                <p style={styles.sectionDescription}>Earn points and get rewards</p>
+              <div style={styles.sectionHeader} className="home-section-header">
+                <h2 style={styles.sectionTitle} className="home-section-title">Loyalty Program</h2>
+                <p style={styles.sectionDescription} className="home-section-description">Earn points and get rewards</p>
               </div>
 
               <div className="card">
-                <div style={styles.loyaltyContainer}>
-                  <div style={styles.pointsCircle}>
-                    <span style={styles.pointsNumber}>{loyalty.balance || 0}</span>
-                    <span style={styles.pointsLabel}>Available Points</span>
+                <div style={styles.loyaltyContainer} className="home-loyalty-container">
+                  <div style={styles.pointsCircle} className="home-points-circle">
+                    <span style={styles.pointsNumber} className="home-points-number">{loyalty.balance || 0}</span>
+                    <span style={styles.pointsLabel} className="home-points-label">Available Points</span>
                   </div>
 
-                  <div style={styles.pointsBreakdown}>
-                    <div style={styles.breakdownItem}>
-                      <span style={styles.breakdownLabel}>Total Earned:</span>
-                      <span style={styles.breakdownValue}>{loyalty.points_earned || 0}</span>
+                  <div style={styles.pointsBreakdown} className="home-points-breakdown">
+                    <div style={styles.breakdownItem} className="home-breakdown-item">
+                      <span style={styles.breakdownLabel} className="home-breakdown-label">Total Earned:</span>
+                      <span style={styles.breakdownValue} className="home-breakdown-value">{loyalty.points_earned || 0}</span>
                     </div>
-                    <div style={styles.breakdownItem}>
-                      <span style={styles.breakdownLabel}>Available Balance:</span>
-                      <span style={styles.breakdownValue}>{loyalty.balance || 0}</span>
+                    <div style={styles.breakdownItem} className="home-breakdown-item">
+                      <span style={styles.breakdownLabel} className="home-breakdown-label">Available Balance:</span>
+                      <span style={styles.breakdownValue} className="home-breakdown-value">{loyalty.balance || 0}</span>
                     </div>
-                    <div style={styles.breakdownItem}>
-                      <span style={styles.breakdownLabel}>Redeemed:</span>
-                      <span style={styles.breakdownValue}>{loyalty.points_redeemed || 0}</span>
+                    <div style={styles.breakdownItem} className="home-breakdown-item">
+                      <span style={styles.breakdownLabel} className="home-breakdown-label">Redeemed:</span>
+                      <span style={styles.breakdownValue} className="home-breakdown-value">{loyalty.points_redeemed || 0}</span>
                     </div>
                   </div>
 
@@ -583,9 +589,9 @@ export const HomePage = ({ user }) => {
           {/* FEEDBACK & COMPLAINTS TAB */}
           {activeTab === 'feedback' && (
             <div>
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>Feedback & Complaints</h2>
-                <p style={styles.sectionDescription}>We value your feedback</p>
+              <div style={styles.sectionHeader} className="home-section-header">
+                <h2 style={styles.sectionTitle} className="home-section-title">Feedback & Complaints</h2>
+                <p style={styles.sectionDescription} className="home-section-description">We value your feedback</p>
               </div>
 
               <FeedbackForm userId={user.id} notifications={notifications} subscriptionType="home_internet" />
@@ -594,7 +600,7 @@ export const HomePage = ({ user }) => {
         </div>
 
         {/* Footer */}
-        <footer style={styles.footer}>
+        <footer style={styles.footer} className="home-footer">
           <p>&copy; 2025 Mnet Home Internet — Connecting Homes, Building Communities</p>
         </footer>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../api";
 import '../index.css';
+import './auth.css';
 
 export default function Register({ onGoToLogin, onRegisterSuccess }) {
   const [form, setForm] = useState({
@@ -64,14 +65,15 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
   };
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={styles.registerContainer}>
-        <div className="card" style={styles.card}>
+    <div style={styles.pageContainer} className="auth-page-container">
+      <div style={styles.registerContainer} className="auth-container">
+        <div className="card auth-card" style={styles.card}>
           {/* Header */}
           <div style={styles.header}>
-            <div style={styles.iconContainer}>
+            <div style={styles.iconContainer} className="auth-icon-container">
               <svg
                 style={styles.icon}
+                className="auth-icon"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -84,8 +86,8 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
                 />
               </svg>
             </div>
-            <h2 style={styles.title}>Create Account</h2>
-            <p style={styles.subtitle}>Join Mnet WiFi Portal today</p>
+            <h2 style={styles.title} className="auth-title">Create Account</h2>
+            <p style={styles.subtitle} className="auth-subtitle">Join Mnet WiFi Portal today</p>
           </div>
 
           {/* Error Message */}
@@ -97,7 +99,7 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
 
           {/* Registration Form */}
           <form onSubmit={handleSubmit}>
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="name">Full Name</label>
               <input
                 id="name"
@@ -110,7 +112,7 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
               />
             </div>
 
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="email">Email Address</label>
               <input
                 id="email"
@@ -123,7 +125,7 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
               />
             </div>
 
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="phone_number">Phone Number</label>
               <input
                 id="phone_number"
@@ -136,7 +138,7 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
               />
             </div>
 
-            <div style={styles.formGroup}>
+            <div style={styles.formGroup} className="auth-form-group">
               <label htmlFor="password">Password</label>
               <input
                 id="password"
@@ -151,7 +153,7 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
 
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-primary auth-submit-button"
               style={styles.submitButton}
               disabled={isLoading}
             >
@@ -167,8 +169,8 @@ export default function Register({ onGoToLogin, onRegisterSuccess }) {
           </form>
 
           {/* Login Link */}
-          <div style={styles.footer}>
-            <p style={styles.footerText}>
+          <div style={styles.footer} className="auth-footer">
+            <p style={styles.footerText} className="auth-footer-text">
               Already have an account?{' '}
               <button
                 onClick={onGoToLogin}
